@@ -20,7 +20,18 @@ const Section = styled.section`
 const ContainerWrap = styled.div`
   width: 1024px;
   margin: 0 auto;
-  padding: 80px 40px;
+  padding: 100px 40px;
+`
+
+const Tabss = styled(Tab)`
+  width: 50%;
+  text-align: center;
+  padding: 25px 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #031f42;
+  border-bottom: 4px solid #031f42
+    // ${props => (props.current ? '#031f42' : 'transparent')};
 `
 
 const Container = styled.div`
@@ -29,6 +40,18 @@ const Container = styled.div`
   margin: 0 auto;
   background: white;
   padding: 5rem 10rem;
+  box-sizing: border-box;
+  border: 1px solid #e7eaf3;
+  border-radius: 5px;
+  box-shadow: 0 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
+`
+
+const ContainerBottom = styled.div`
+  width: 100%;
+  // height: 780px;
+  margin: 0 auto;
+  background: white;
+  padding: 5rem 3rem;
   box-sizing: border-box;
   border: 1px solid #e7eaf3;
   border-radius: 5px;
@@ -67,7 +90,9 @@ class Contract extends Component {
 
     this.state = {
       isDeployContract: false,
-      isDeploySueccess: false
+      isDeploySuccess: false,
+      isAccessTab: false,
+      isAccessSuccess: false
     }
   }
 
@@ -76,19 +101,40 @@ class Contract extends Component {
       isDeployContract: true
     })
   }
-  deploySueccess = () => {
+  deploySuccess = () => {
     this.setState({
-      isDeploySueccess: true
+      isDeploySuccess: true
     })
   }
   deployClose = () => {
     this.setState({
-      isDeploySueccess: false
+      isDeploySuccess: false
+    })
+  }
+  accessTabOpen = () => {
+    this.setState({
+      isAccessTab: true
+    })
+  }
+  accessTabClose = () => {
+    this.setState({
+      isAccessTab: false
+    })
+  }
+  accessSuccess = () => {
+    this.setState({
+      isAccessSuccess: true,
+      isAccessTab: false
     })
   }
 
   render() {
-    const { isDeployContract, isDeploySueccess } = this.state
+    const {
+      isDeployContract,
+      isDeploySuccess,
+      isAccessTab,
+      isAccessSuccess
+    } = this.state
 
     return (
       <Section>
@@ -97,10 +143,18 @@ class Contract extends Component {
             <h2>Interact with Contract or Deploy Contract</h2>
             <Tabs className={styles.tabs}>
               <TabList className={styles.tabList}>
-                <Tab selectedTabClassName="asd" className={styles.tab}>
+                <Tabss
+                  current={false}
+                  className={styles.tab}
+                  onClick={this.accessTabClose}>
                   Interact with Contract
-                </Tab>
-                <Tab className={styles.tab}>Deploy Contract</Tab>
+                </Tabss>
+                <Tabss
+                  current={true}
+                  className={styles.tab}
+                  onClick={this.accessTabOpen}>
+                  Deploy Contract
+                </Tabss>
               </TabList>
               <div className={styles.description}>
                 MyEtherWallet.com does not hold your keys for you. We cannot
@@ -152,12 +206,14 @@ class Contract extends Component {
                     type="text"
                     placeholder="30000"
                   />
-                  <input
-                    className={styles.submit}
-                    type="button"
-                    value="Sign Transaction"
-                    onClick={this.deploySection}
-                  />
+                  {isAccessSuccess && (
+                    <input
+                      className={styles.submit}
+                      type="button"
+                      value="Sign Transaction"
+                      onClick={this.deploySection}
+                    />
+                  )}
                 </form>
                 {isDeployContract && (
                   <div>
@@ -179,7 +235,7 @@ class Contract extends Component {
                       style={{ margin: 0 }}
                       type="submit"
                       value="Deploy Contract"
-                      onClick={this.deploySueccess}
+                      onClick={this.deploySuccess}
                     />
                   </div>
                 )}
@@ -187,7 +243,7 @@ class Contract extends Component {
             </Tabs>
           </Container>
         </ContainerWrap>
-        {isDeploySueccess && (
+        {isDeploySuccess && (
           <DeploySuccess>
             <DeploySuccessDesc>
               <FontAweSomeWrap>
@@ -209,6 +265,63 @@ class Contract extends Component {
               </FontAweSomeWrap>
             </DeploySuccessDesc>
           </DeploySuccess>
+        )}
+        {isAccessTab && (
+          <ContainerWrap style={{ paddingTop: 0, paddingBottom: 60 }}>
+            <ContainerBottom>
+              <h2>Access Existing Account</h2>
+              <Tabs
+                style={{
+                  marginTop: 20,
+                  display: 'flex',
+                  flexDirection: 'row'
+                }}>
+                <TabList className={styles.accountTabs}>
+                  <Tab className={styles.accountTab}>
+                    Sign-in Using Private Key
+                  </Tab>
+                  <Tab className={styles.accountTab}>
+                    Sign-in Using Keystore File
+                  </Tab>
+                </TabList>
+                <div style={{ flex: 1.3, padding: '0 30px' }}>
+                  <div className={styles.description} style={{ paddingTop: 0 }}>
+                    You can access your account using your private key or Klaytn
+                    HRA Private Key (for custom address accounts). Or you can
+                    also use your keystore file and its password.
+                  </div>
+                  <TabPanel>
+                    <h3>Private Key or HRA Private Key</h3>
+                    <input
+                      className={styles.input}
+                      style={{ marginBottom: 30 }}
+                    />
+                    <input
+                      className={styles.submit}
+                      type="submit"
+                      value="Access"
+                      onClick={this.accessSuccess}
+                    />
+                  </TabPanel>
+                  <TabPanel>
+                    <h3>Import Keystore File (.json)</h3>
+                    <input
+                      className={styles.input}
+                      style={{ marginBottom: 30 }}
+                    />
+                    <h3>Password</h3>
+                    <input className={styles.input} />
+                    <input
+                      className={styles.submit}
+                      type="submit"
+                      value="Access"
+                      onClick={this.accessSuccess}
+                    />
+                  </TabPanel>
+                </div>
+              </Tabs>
+            </ContainerBottom>
+          </ContainerWrap>
         )}
       </Section>
     )
