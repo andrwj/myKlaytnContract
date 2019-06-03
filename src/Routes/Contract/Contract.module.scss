@@ -28,7 +28,8 @@ h2 {
 
     .textarea {
       width: 100%;
-      height: 100px;
+      height: 200px;
+      line-height:1.4;
       margin-bottom: 30px;
       padding: 10px;
     }
@@ -81,6 +82,13 @@ h3 {
   width: 100%;
   height: 40px;
   text-indent: 10px;
+}
+.file {
+  display: block;
+  width: 100%;
+  height: 40px;
+  text-indent: 10px;
+  width: 100%;
 }
 .submit {
   background: #031f42;
