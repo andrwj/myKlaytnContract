@@ -1,27 +1,30 @@
-import React, { Component } from 'react'
-import { withRouter } from 'react-router-dom'
-import Router from 'Components/Router'
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
-import styled from 'styled-components'
+import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import Router from 'Components/Router';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import styled from 'styled-components';
 
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
-import styles from './Contract.module.scss'
+import * as utils from 'Utils/index';
+import {estimateGas} from 'Utils/mason';
 
-library.add(faThumbsUp)
+import styles from './Contract.module.scss';
+
+library.add(faThumbsUp);
 
 const Section = styled.section`
   width: 100%;
   // background-color: red;
-`
+`;
 
 const ContainerWrap = styled.div`
   width: 1024px;
   margin: 0 auto;
   padding: 100px 40px;
-`
+`;
 
 const Tabss = styled(Tab)`
   width: 50%;
@@ -32,7 +35,7 @@ const Tabss = styled(Tab)`
   color: #031f42;
   border-bottom: 4px solid #031f42
     // ${props => (props.current ? '#031f42' : 'transparent')};
-`
+`;
 
 const Container = styled.div`
   width: 100%;
@@ -92,49 +95,35 @@ class Contract extends Component {
       isDeployContract: false,
       isDeploySuccess: false,
       isAccessTab: false,
-      isAccessSuccess: false
+      isAccessSuccess: false,
+      isValidBytecodes: false,
+      newTextareaClassName: styles.textarea,
+      gasLimit: 0,
+    };
+  }
+
+  deploySection = () => this.setState({ isDeployContract: true });
+  deploySuccess = () => this.setState({ isDeploySuccess: true });
+  deployClose = () => this.setState({ isDeploySuccess: false });
+  accessTabOpen = () => this.setState({ isAccessTab: true });
+  accessTabClose = () => this.setState({ isAccessTab: false });
+  accessSuccess = () => this.setState({ isAccessSuccess: true, isAccessTab: false });
+  setGasLimit = (v) => this.setState({gasLimit: v});
+
+  handleNewTextareaChange = ({target: {value}}) => {
+    const ok = utils.isValidHexString(value);
+    this.setState({
+      newTextareaClassName: ok ? `${styles.textarea} validate-ok` : styles.textarea
+    });
+    if(ok) {
+      estimateGas(value).then(this.setGasLimit).catch(e=> {
+        this.setGasLimit(0);
+      });
     }
   }
 
-  deploySection = () => {
-    this.setState({
-      isDeployContract: true
-    })
-  }
-  deploySuccess = () => {
-    this.setState({
-      isDeploySuccess: true
-    })
-  }
-  deployClose = () => {
-    this.setState({
-      isDeploySuccess: false
-    })
-  }
-  accessTabOpen = () => {
-    this.setState({
-      isAccessTab: true
-    })
-  }
-  accessTabClose = () => {
-    this.setState({
-      isAccessTab: false
-    })
-  }
-  accessSuccess = () => {
-    this.setState({
-      isAccessSuccess: true,
-      isAccessTab: false
-    })
-  }
-
   render() {
-    const {
-      isDeployContract,
-      isDeploySuccess,
-      isAccessTab,
-      isAccessSuccess
-    } = this.state
+    const { isDeployContract, isDeploySuccess, isAccessTab, isAccessSuccess } = this.state
 
     return (
       <Section>
@@ -144,13 +133,11 @@ class Contract extends Component {
             <Tabs className={styles.tabs}>
               <TabList className={styles.tabList}>
                 <Tabss
-                  current={false}
                   className={styles.tab}
                   onClick={this.accessTabClose}>
                   Interact with Contract
                 </Tabss>
                 <Tabss
-                  current={true}
                   className={styles.tab}
                   onClick={this.accessTabOpen}>
                   Deploy Contract
@@ -195,50 +182,51 @@ class Contract extends Component {
               <TabPanel className={styles.tabPanel}>
                 <h3>Byte Code</h3>
                 <form>
-                  <textarea className={styles.textarea} type="text" />
+                  <textarea className={this.state.newTextareaClassName} onChange={this.handleNewTextareaChange} type="text" />
                 </form>
-                <h3>Gas Limit</h3>
-                <form
-                //  onSubmit={this.handleSubmit}
-                >
-                  <input
-                    className={styles.input}
-                    type="text"
-                    placeholder="30000"
-                  />
-                  {isAccessSuccess && (
-                    <input
-                      className={styles.submit}
-                      type="button"
-                      value="Sign Transaction"
-                      onClick={this.deploySection}
-                    />
-                  )}
-                </form>
-                {isDeployContract && (
-                  <div>
-                    <div className={styles.transactionBox}>
-                      <form>
-                        <h3>Raw Transaction</h3>
-                        <textarea className={styles.textarea} type="text" />
-                      </form>
+        <h3>Gas Limit</h3>
+        <form
+      //  onSubmit={this.handleSubmit}
+        >
+        <input
+          className={styles.input}
+          type="text"
+          placeholder=""
+          value={this.state.gasLimit}
+        />
+        {isAccessSuccess && (
+            <input
+              className={styles.submit}
+              type="button"
+              value="Sign Transaction"
+              onClick={this.deploySection}
+            />
+        )}
+      </form>
+        {isDeployContract && (
+            <div>
+            <div className={styles.transactionBox}>
+            <form>
+            <h3>Raw Transaction</h3>
+            <textarea className={styles.textarea} type="text" />
+            </form>
 
-                      <form
-                      //  onSubmit={this.handleSubmit}
-                      >
-                        <h3>Signed Transaction</h3>
-                        <textarea className={styles.textarea} type="text" />
-                      </form>
-                    </div>
-                    <input
-                      className={styles.submit}
-                      style={{ margin: 0 }}
-                      type="submit"
-                      value="Deploy Contract"
-                      onClick={this.deploySuccess}
-                    />
-                  </div>
-                )}
+            <form
+          //  onSubmit={this.handleSubmit}
+            >
+            <h3>Signed Transaction</h3>
+            <textarea className={styles.textarea} type="text" />
+            </form>
+            </div>
+            <input
+              className={styles.submit}
+              style={{ margin: 0 }}
+              type="submit"
+              value="Deploy Contract"
+              onClick={this.deploySuccess}
+            />
+            </div>
+        )}
               </TabPanel>
             </Tabs>
           </Container>

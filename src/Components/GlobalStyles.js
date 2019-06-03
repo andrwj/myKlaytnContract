@@ -17,5 +17,10 @@ const globalStyles = createGlobalStyle`
         color:black;
         // padding-top:50px;
     }
+
+    .validate-ok {
+      border: 1px solid green;
+      border-radius: 10px;
+    }
 `
 export default globalStyles
