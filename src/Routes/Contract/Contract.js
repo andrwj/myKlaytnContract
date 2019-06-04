@@ -254,7 +254,7 @@ class Contract extends Component {
   }
 
   Klaytnscope = (type, addr) =>
-    `https://baobab.klaytnscope.com/api/${type}/${addr}`
+    `https://baobab.klaytnscope.com/${type}/${addr}`
 
   render() {
     return (
