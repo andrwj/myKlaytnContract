@@ -46,7 +46,8 @@
     }
   }
 
-  .deploySuccess {
+  // Deploy Success시 나오는 Green Modal
+  .messageBox {
     width: 100%;
     background: #5eda9e;
     text-align: center;
@@ -56,19 +57,44 @@
     position: absolute;
     bottom: 70px;
   }
-  .deploySuccessDescWrap {
-    width: 1140px;
+  .warningBox {
+    width: 100%;
+    background: #e94b3f;
+    text-align: center;
+    padding: 75px 0;
+    box-shadow: 0.5rem 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
+    color: #fff;
+    position: absolute;
+    bottom: 70px;
+  }
+  .infoBox {
+    width: 100%;
+    background: #0e97c0;
+    text-align: center;
+    padding: 75px 0;
+    box-shadow: 0.5rem 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
+    color: #fff;
+    position: absolute;
+    bottom: 70px;
+  }
+  .deployDescWrap {
+    width: 100%;
     margin: 0 auto;
     font-size: 14px;
     text-align: left;
     line-height: 18px;
     display: flex;
+    justify-content: space-around;
 
     .fontAweSomeWrap {
       display: flex;
       align-items: center;
       padding: 0 50px;
       font-size: 30px;
+    }
+    .deployDesc {
+      font-size: 18px;
+      line-height: 30px;
     }
   }
 }
@@ -182,8 +208,4 @@
   height: 40px;
   font-family: monospace;
   font-size: 16px;
-}
-.deploySuccessDesc {
-  font-size: 18px;
-  line-height: 30px;
 }

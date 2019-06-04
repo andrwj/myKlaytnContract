@@ -1,22 +1,22 @@
-import React, { Component } from 'react'
-import { withRouter } from 'react-router-dom'
-import Router from 'Components/Router'
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
-import styled from 'styled-components'
+import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import Router from 'Components/Router';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import styled from 'styled-components';
 
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
-import * as R from 'ramda'
-import * as utils from 'Utils/index'
-import * as Mason from 'Utils/mason'
+import * as R from 'ramda';
+import * as utils from 'Utils/index';
+import * as Mason from 'Utils/mason';
 
-import styles from './Contract.module.scss'
+import styles from './Contract.module.scss';
 
-library.add(faThumbsUp)
+library.add(faThumbsUp);
 
-const { caver, baobabNetwork } = Mason
+const { caver, baobabNetwork } = Mason;
 
 const defaultValues = {
   showAccessTab: false,
@@ -36,41 +36,41 @@ const defaultValues = {
   caver: null, // in case ...
   contractAddress: '',
   transactionHash: ''
-}
+};
 
 class Contract extends Component {
   constructor(props) {
-    super(props)
-    this.state = Object.assign({}, defaultValues)
-    caver(baobabNetwork())
+    super(props);
+    this.state = Object.assign({}, defaultValues);
+    caver(baobabNetwork());
   }
 
-  every = (...args) => args.every(name => !!this.state[name])
-  sethunk = R.curry((name, value, _) => this.setState({ [name]: value }))
-  gethunk = R.curry((name, _) => this.state[name])
-  enable = R.curry((name, _) => this.setState({ [name]: true }))
-  disable = R.curry((name, _) => this.setState({ [name]: false }))
+  every = (...args) => args.every(name => !!this.state[name]);
+  sethunk = R.curry((name, value, _) => this.setState({ [name]: value }));
+  gethunk = R.curry((name, _) => this.state[name]);
+  enable = R.curry((name, _) => this.setState({ [name]: true }));
+  disable = R.curry((name, _) => this.setState({ [name]: false }));
   toggle = R.curry((values, name) =>
     this.setState({
       [name]: values[1 - (Object.is(!!this.state[name], true) ? 1 : 0)]
     })
-  )
-  get = name => this.state[name]
+  );
+  get = name => this.state[name];
   set = R.curry((name, value) =>
     Object.is(value, undefined)
       ? this.state[name]
       : this.setState({ [name]: value })
-  )
+  );
   Set = args =>
     this.setState(
       Object.entries(args)
         .map(([k, v]) => ({ [k]: v }))
         .reduce((acc, el) => Object.assign(acc, el), {})
-    )
+    );
 
-  toggleAccessTab = () => this.toggle([false, true], 'showAccessTab')
-  resetAll = () => this.Set(defaultValues)
-  preparing = () => alert('준비중입니다')
+  toggleAccessTab = () => this.toggle([false, true], 'showAccessTab');
+  resetAll = () => this.Set(defaultValues);
+  preparing = () => alert('준비중입니다');
 
   // bytecode를 통해 컨트랙을 생성 > TEXTAREA에 bytecode를 넣을 경우
   BytecodeChangeHandler = ({ target: { value } }) => {
@@ -91,21 +91,21 @@ class Contract extends Component {
             hasBytecode: false,
             bytecode: '',
             validBytrecodeClassName: styles.textarea
-          })
-        })
+          });
+        });
     } else {
       this.Set({
         gasLimit: 0,
         hasBytecode: false,
         bytecode: '',
         validBytrecodeClassName: styles.textarea
-      })
+      });
     }
-  }
+  };
 
   // 사용자가 bytecode의 gasLimit값을 직접 수정해서 넣었을 경우
   // TODO: validation check
-  handleGasLimitChange = ({ target: { value } }) => this.set('gasLimit', value)
+  handleGasLimitChange = ({ target: { value } }) => this.set('gasLimit', value);
 
   // 사용자의 PC에 저장된 Keystore (JSON) 파일을 읽어 들일 때
   // TODO: 상황별 가이드라인
@@ -114,53 +114,53 @@ class Contract extends Component {
       files: [path]
     }
   }) => {
-    const fileReader = new FileReader()
-    fileReader.readAsText(path)
+    const fileReader = new FileReader();
+    fileReader.readAsText(path);
     fileReader.onload = ({ target: { result } }) => {
       try {
-        this.state.keystore = Mason.getKeystoreFromString(result)
+        this.state.keystore = Mason.getKeystoreFromString(result);
         // focus on password input field
       } catch (event) {
-        this.get('password')
+        this.get('password');
       }
-    }
-  }
+    };
+  };
 
   // 사용자의 PC에 저장된 Keystore (JSON) 파일을 읽어 들인 후, 비밀번호 입력할 때
   // TODO: focus 떠날 때 값을 받을 것
-  handlePasswordChange = ({ target: { value } }) => this.set('password', value)
+  handlePasswordChange = ({ target: { value } }) => this.set('password', value);
 
   authByKeystore = e => {
     try {
       const verified = /*caver object */ Mason.authenticate(
         this.get('keystore'),
         this.get('password')
-      )
-      this.Set({ caver: verified, isAuthorized: !!verified })
+      );
+      this.Set({ caver: verified, isAuthorized: !!verified });
     } catch (e) {}
-  }
+  };
 
   // 개인 인증을 PrivateKey로 선택했을 때
   handlePrivateKeyChange = ({ target: { value } }) =>
-    this.set('privateKey', value)
+    this.set('privateKey', value);
 
   // 개인 인증을 로컬에 저장된 keystore(JSON) 파일로 선택했을 때
   authByPrivateKey = () => {
     try {
-      const verified = Mason.privateKeyToAccount(this.get('privateKey'))
-      this.Set({ caver: verified, isAuthorized: !!verified })
+      const verified = Mason.privateKeyToAccount(this.get('privateKey'));
+      this.Set({ caver: verified, isAuthorized: !!verified });
     } catch (e) {}
-  }
+  };
 
   signTransaction = () => {
-    if (!this.get('isAuthorized')) return
+    if (!this.get('isAuthorized')) return;
 
     const payload = {
       data: this.get('bytecode'),
       gas: this.get('gasLimit'),
       from: caver().klay.defaultAccount,
       value: '0x00'
-    }
+    };
     Mason.signTransaction(payload)
       .then(R.tap(tx => console.log(JSON.stringify(tx))))
       .then(({ rawTransaction }) => {
@@ -168,13 +168,13 @@ class Contract extends Component {
           hasSigned: true,
           rawTransaction: Object.assign({}, payload, { to: null }),
           signedTransaction: rawTransaction
-        })
+        });
       })
       .catch(e => {
-        this.Set({ hasSigned: false, rawTransaction: '' })
-        console.log(e)
-      })
-  }
+        this.Set({ hasSigned: false, rawTransaction: '' });
+        console.log(e);
+      });
+  };
 
   deployContract = () => {
     Mason.sendSignedTransaction(this.get('signedTransaction'))
@@ -183,10 +183,11 @@ class Contract extends Component {
         this.Set({ contractAddress, transactionHash })
       )
       .then(this.enable('isContractDeployed'))
-      .catch(console.log)
-  }
+      .catch(console.log);
+  };
 
-  Klaytnscope = (type, addr) => `https://baobab.klaytnscope.com/${type}/${addr}`
+  Klaytnscope = (type, addr) =>
+    `https://baobab.klaytnscope.com/${type}/${addr}`;
 
   render() {
     return (
@@ -201,7 +202,7 @@ class Contract extends Component {
                 <Tab className={styles.tab} onClick={this.toggleAccessTab}>
                   Deploy Contract
                 </Tab>
-                {/* 활성화 될 시 Tag 이름을 div 대신 Tabss로 바꿀 것. */}
+                {/* 활성화 될 시 Tag 이름을 div 대신 Tab으로 바꿀 것. */}
                 <div
                   className={styles.tab}
                   onClick={this.preparing}
@@ -285,7 +286,9 @@ class Contract extends Component {
                   </div>
                 )}
               </TabPanel>
-              <TabPanel className={styles.tabPanel}>
+              {/* ABI Tab 활성화시 같이 풀 것. */}
+
+              {/* <TabPanel className={styles.tabPanel}>
                 <h3 className={styles.h3}>Contact Address</h3>
                 <form>
                   <input
@@ -315,17 +318,23 @@ class Contract extends Component {
                     />
                   )}
                 </form>
-              </TabPanel>
+              </TabPanel> */}
             </Tabs>
           </div>
         </div>
         {this.every('isAuthorized', 'hasSigned', 'isContractDeployed') && (
-          <div className={styles.deploySuccess}>
-            <div className={styles.deploySuccessDescWrap}>
+          <div className={styles.messageBox}>
+            {/* warning일때, className="warningBox"  */}
+            {/* information일때, className="infoBox"  */}
+            <div className={styles.deployDescWrap}>
               <div className={styles.fontAweSomeWrap}>
                 <i className="fal fa-thumbs-up" />
+                {/* warning 일때  */}
+                {/* <i class="fal fa-exclamation-triangle" /> */}
+                {/* information 일때  */}
+                {/* <i class="fal fa-info-circle" /> */}
               </div>
-              <div className={styles.deploySuccessDesc}>
+              <div className={styles.deployDesc}>
                 Your TX has been broadcast to the network.
                 <br /> 1) Check your TX below. <br />
                 2) If it is pending for minutes or disappears, use the Check TX
@@ -422,8 +431,8 @@ class Contract extends Component {
           </div>
         )}
       </section>
-    )
+    );
   }
 }
 
-export default Contract
+export default Contract;
