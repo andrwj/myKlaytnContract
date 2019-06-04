@@ -74,11 +74,12 @@ class Contract extends Component {
 
   // bytecode를 통해 컨트랙을 생성 > TEXTAREA에 bytecode를 넣을 경우
   BytecodeChangeHandler = ({ target: { value } }) => {
-    if (utils.isValidHexString(value)) {
-      Mason.estimateGas(value)
+    const bytecode = String(value).trim();
+    if (utils.isValidHexString(bytecode)) {
+      Mason.estimateGas({data:bytecode, to:Mason.whoami()})
         .then(this.set('gasLimit'))
         .then(this.enable('hasBytecode'))
-        .then(this.sethunk('bytecode', String(value).trim()))
+        .then(this.sethunk('bytecode', bytecode))
         .then(
           this.sethunk(
             'validBytrecodeClassName',
@@ -91,17 +92,17 @@ class Contract extends Component {
             hasBytecode: false,
             bytecode: '',
             validBytrecodeClassName: styles.textarea
-          });
-        });
+          })
+        })
     } else {
       this.Set({
         gasLimit: 0,
         hasBytecode: false,
         bytecode: '',
         validBytrecodeClassName: styles.textarea
-      });
+      })
     }
-  };
+  }
 
   // 사용자가 bytecode의 gasLimit값을 직접 수정해서 넣었을 경우
   // TODO: validation check
@@ -123,8 +124,8 @@ class Contract extends Component {
       } catch (event) {
         this.get('password');
       }
-    };
-  };
+    }
+  }
 
   // 사용자의 PC에 저장된 Keystore (JSON) 파일을 읽어 들인 후, 비밀번호 입력할 때
   // TODO: focus 떠날 때 값을 받을 것
@@ -136,7 +137,7 @@ class Contract extends Component {
         this.get('keystore'),
         this.get('password')
       );
-      this.Set({ caver: verified, isAuthorized: !!verified });
+      this.Set({ caver: verified, isAuthorized: !!verified })
     } catch (e) {}
   };
 
@@ -148,12 +149,12 @@ class Contract extends Component {
   authByPrivateKey = () => {
     try {
       const verified = Mason.privateKeyToAccount(this.get('privateKey'));
-      this.Set({ caver: verified, isAuthorized: !!verified });
+      this.Set({ caver: verified, isAuthorized: !!verified })
     } catch (e) {}
   };
 
   signTransaction = () => {
-    if (!this.get('isAuthorized')) return;
+    if (!this.get('isAuthorized')) return
 
     const payload = {
       data: this.get('bytecode'),
@@ -168,12 +169,12 @@ class Contract extends Component {
           hasSigned: true,
           rawTransaction: Object.assign({}, payload, { to: null }),
           signedTransaction: rawTransaction
-        });
+        })
       })
       .catch(e => {
         this.Set({ hasSigned: false, rawTransaction: '' });
-        console.log(e);
-      });
+        console.log(e)
+      })
   };
 
   deployContract = () => {
@@ -183,11 +184,10 @@ class Contract extends Component {
         this.Set({ contractAddress, transactionHash })
       )
       .then(this.enable('isContractDeployed'))
-      .catch(console.log);
+      .catch(console.log)
   };
 
-  Klaytnscope = (type, addr) =>
-    `https://baobab.klaytnscope.com/${type}/${addr}`;
+  Klaytnscope = (type, addr) => `https://baobab.klaytnscope.com/${type}/${addr}`;
 
   render() {
     return (
@@ -202,7 +202,7 @@ class Contract extends Component {
                 <Tab className={styles.tab} onClick={this.toggleAccessTab}>
                   Deploy Contract
                 </Tab>
-                {/* 활성화 될 시 Tag 이름을 div 대신 Tab으로 바꿀 것. */}
+                {/* 활성화 될 시 Tag 이름을 div 대신 Tabss로 바꿀 것. */}
                 <div
                   className={styles.tab}
                   onClick={this.preparing}
@@ -286,55 +286,47 @@ class Contract extends Component {
                   </div>
                 )}
               </TabPanel>
-              {/* ABI Tab 활성화시 같이 풀 것. */}
-
-              {/* <TabPanel className={styles.tabPanel}>
-                <h3 className={styles.h3}>Contact Address</h3>
-                <form>
-                  <input
-                    className={styles.input}
-                    style={{ marginBottom: 30 }}
-                    type="text"
-                  />
-                </form>
-                <h3 className={styles.h3}>Select Existing Contract</h3>
-                <form>
-                  <input
-                    className={styles.input}
-                    style={{ marginBottom: 30 }}
-                    type="text"
-                    placeholder="Select a Contract"
-                  />
-                </form>
-                <h3 className={styles.h3}>ABI / JSON Interface</h3>
-                <form>
-                  <textarea className={styles.textarea} type="text" />
-                  {this.every('isAuthorized', 'gotDeployedContract') && (
-                    <input
-                      className={styles.submit}
-                      style={{ margin: 0 }}
-                      type="submit"
-                      value="Access"
-                    />
-                  )}
-                </form>
-              </TabPanel> */}
+              {/*<TabPanel className={styles.tabPanel}>*/}
+              {/*  <h3 className={styles.h3}>Contact Address</h3>*/}
+              {/*  <form>*/}
+              {/*    <input*/}
+              {/*      className={styles.input}*/}
+              {/*      style={{ marginBottom: 30 }}*/}
+              {/*      type="text"*/}
+              {/*    />*/}
+              {/*  </form>*/}
+              {/*  <h3 className={styles.h3}>Select Existing Contract</h3>*/}
+              {/*  <form>*/}
+              {/*    <input*/}
+              {/*      className={styles.input}*/}
+              {/*      style={{ marginBottom: 30 }}*/}
+              {/*      type="text"*/}
+              {/*      placeholder="Select a Contract"*/}
+              {/*    />*/}
+              {/*  </form>*/}
+              {/*  <h3 className={styles.h3}>ABI / JSON Interface</h3>*/}
+              {/*  <form>*/}
+              {/*    <textarea className={styles.textarea} type="text" />*/}
+              {/*    {this.every('isAuthorized', 'gotDeployedContract') && (*/}
+              {/*      <input*/}
+              {/*        className={styles.submit}*/}
+              {/*        style={{ margin: 0 }}*/}
+              {/*        type="submit"*/}
+              {/*        value="Access"*/}
+              {/*      />*/}
+              {/*    )}*/}
+              {/*  </form>*/}
+              {/*</TabPanel>*/}
             </Tabs>
           </div>
         </div>
         {this.every('isAuthorized', 'hasSigned', 'isContractDeployed') && (
-          <div className={styles.messageBox}>
-            {/* warning일때, className="warningBox"  */}
-            {/* information일때, className="infoBox"  */}
-            <div className={styles.deployDescWrap}>
+          <div className={styles.deploySuccess}>
+            <div className={styles.deploySuccessDescWrap}>
               <div className={styles.fontAweSomeWrap}>
                 <i className="fal fa-thumbs-up" />
-                {/* warning 일때  */}
-                {/* <i class="fal fa-exclamation-triangle" /> */}
-                {/* information 일때  */}
-                {/* <i class="fal fa-info-circle" /> */}
               </div>
-              <div className={styles.deployDesc}>
+              <div className={styles.deploySuccessDesc}>
                 Your TX has been broadcast to the network.
                 <br /> 1) Check your TX below. <br />
                 2) If it is pending for minutes or disappears, use the Check TX
@@ -431,8 +423,8 @@ class Contract extends Component {
           </div>
         )}
       </section>
-    );
+    )
   }
 }
 
-export default Contract;
+export default Contract
