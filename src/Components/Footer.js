@@ -11,7 +11,7 @@ const Footer = styled.footer`
   // display: flex;
   z-index: 10;
   background-color: #586878;
-  position: relative;
+  position: absolute;
   bottom: 0;
 `
 
@@ -41,9 +41,12 @@ const SLink = styled(Link)`
 export default withRouter(({ location: { pathname } }) => (
   <Footer>
     <List>
-      <Item current={pathname === '/'}>
+      <Item>
         <SLink to="/">
-          <img src={logoWhite} width="140" />
+          {/* <img src={logoWhite} width="140" /> */}
+          <span style={{ color: '#fff', fontFamily: 'notosans' }}>
+            Copyright © 2019 Insureum. All Rights Reserved.
+          </span>
         </SLink>
       </Item>
       {/* <Item current={pathname === '/tv'}>

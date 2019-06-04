@@ -12,6 +12,8 @@ const Header = styled.header`
   background-color: #fff;
   border-bottom: 1px solid #e7eaf3;
   box-shadow: 0 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
+  position: absolute;
+  top: 0;
 `
 
 const List = styled.ul`
