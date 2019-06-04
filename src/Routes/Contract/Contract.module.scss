@@ -5,6 +5,18 @@ h2 {
   font-weight: 700;
 }
 
+.section {
+  width: 100%;
+  height: 100%;
+  padding: 120px 0;
+  overflow-y: scroll;
+
+  .containerWrap {
+    width: 1024px;
+    margin: 0 auto;
+  }
+}
+
 .tabs {
   .tabList {
     // background: red;

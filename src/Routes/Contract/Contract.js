@@ -18,16 +18,9 @@ library.add(faThumbsUp)
 
 const { caver, baobabNetwork } = Mason
 
-const Section = styled.section`
-  width: 100%;
-  height: 100%;
-  padding: 120px 0;
-  overflow-y: scroll;
-`
+// const Section = styled.section``
 
 const ContainerWrap = styled.div`
-  width: 1024px;
-  margin: 0 auto;
   // padding: 100px 40px;
 `
 
@@ -265,8 +258,8 @@ class Contract extends Component {
 
   render() {
     return (
-      <Section>
-        <ContainerWrap>
+      <section className={styles.section}>
+        <div className={styles.containerWrap}>
           <Container>
             <h2>Interact with Contract or Deploy Contract</h2>
             <Tabs className={styles.tabs}>
@@ -391,7 +384,7 @@ class Contract extends Component {
               </TabPanel>
             </Tabs>
           </Container>
-        </ContainerWrap>
+        </div>
         {this.every('isAuthorized', 'hasSigned', 'isContractDeployed') && (
           <DeploySuccess>
             <DeploySuccessDesc>
@@ -427,7 +420,9 @@ class Contract extends Component {
           </DeploySuccess>
         )}
         {!this.get('isAuthorized') && (
-          <ContainerWrap style={{ paddingTop: 30, paddingBottom: 60 }}>
+          <div
+            className={styles.containerWrap}
+            style={{ paddingTop: 30, paddingBottom: 60 }}>
             <ContainerBottom>
               <h2>Access Existing Account</h2>
               <Tabs
@@ -488,9 +483,9 @@ class Contract extends Component {
                 </div>
               </Tabs>
             </ContainerBottom>
-          </ContainerWrap>
+          </div>
         )}
-      </Section>
+      </section>
     )
   }
 }
