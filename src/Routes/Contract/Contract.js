@@ -20,71 +20,32 @@ const { caver, baobabNetwork } = Mason
 
 // const Section = styled.section``
 
-const ContainerWrap = styled.div`
-  // padding: 100px 40px;
-`
+// const ContainerWrap = styled.div`
+//   // padding: 100px 40px;
+// `
+// const Container = styled.div``
+// const Tabss = styled(Tab)`
 
-const Tabss = styled(Tab)`
-  width: 50%;
-  text-align: center;
-  padding: 25px 10px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #9c9c9c;
-  // border-bottom: 4px solid #031f42
-    // ${props => (props.current ? '#031f42' : 'transparent')};
-`
+//   // border-bottom: 4px solid #031f42
+//     // ${props => (props.current ? '#031f42' : 'transparent')};
+// `
 
-const Container = styled.div`
-  width: 100%;
-  // height: 780px;
-  margin: 0 auto;
-  background: white;
-  padding: 5rem 10rem;
-  box-sizing: border-box;
-  border: 1px solid #e7eaf3;
-  border-radius: 5px;
-  box-shadow: 0 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
-`
+const ContainerBottom = styled.div``
 
-const ContainerBottom = styled.div`
-  width: 100%;
-  // height: 780px;
-  margin: 0 auto;
-  background: white;
-  padding: 5rem 3rem;
-  box-sizing: border-box;
-  border: 1px solid #e7eaf3;
-  border-radius: 5px;
-  box-shadow: 0 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
-`
+// const DeploySuccess = styled.div`
+//   width: 100%;
+//   background: #5eda9e;
+//   text-align: center;
+//   padding: 75px 0;
+//   box-shadow: 0.5rem 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
+//   color: #fff;
+//   position: absolute;
+//   bottom: 70px;
+// `
 
-const DeploySuccess = styled.div`
-  width: 100%;
-  background: #5eda9e;
-  text-align: center;
-  padding: 75px 0;
-  box-shadow: 0.5rem 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
-  color: #fff;
-  position: absolute;
-  bottom: 70px;
-`
+const DeploySuccessDesc = styled.div``
 
-const DeploySuccessDesc = styled.div`
-  width: 1140px;
-  margin: 0 auto;
-  font-size: 14px;
-  text-align: left;
-  line-height: 18px;
-  display: flex;
-`
-
-const FontAweSomeWrap = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 0 50px;
-  font-size: 30px;
-`
+const FontAweSomeWrap = styled.div``
 const defaultValues = {
   showAccessTab: false,
   showSignButton: false,
@@ -253,20 +214,21 @@ class Contract extends Component {
       .catch(console.log)
   }
 
-  Klaytnscope = (type, addr) =>
-    `https://baobab.klaytnscope.com/${type}/${addr}`
+  Klaytnscope = (type, addr) => `https://baobab.klaytnscope.com/${type}/${addr}`
 
   render() {
     return (
       <section className={styles.section}>
         <div className={styles.containerWrap}>
-          <Container>
-            <h2>Interact with Contract or Deploy Contract</h2>
+          <div className={styles.container}>
+            <h2 className={styles.h2}>
+              Interact with Contract or Deploy Contract
+            </h2>
             <Tabs className={styles.tabs}>
               <TabList className={styles.tabList}>
-                <Tabss className={styles.tab} onClick={this.toggleAccessTab}>
+                <Tab className={styles.tab} onClick={this.toggleAccessTab}>
                   Deploy Contract
-                </Tabss>
+                </Tab>
                 {/* 활성화 될 시 Tag 이름을 div 대신 Tabss로 바꿀 것. */}
                 <div
                   className={styles.tab}
@@ -284,7 +246,7 @@ class Contract extends Component {
                 correct URL. You are responsible for your security.
               </div>
               <TabPanel className={styles.tabPanel}>
-                <h3>Byte Code</h3>
+                <h3 className={styles.h3}>Byte Code</h3>
                 <form>
                   <textarea
                     className={this.get('validBytrecodeClassName')}
@@ -293,7 +255,7 @@ class Contract extends Component {
                     value={this.get('bytecode')}
                   />
                 </form>
-                <h3>Gas Limit</h3>
+                <h3 className={styles.h3}>Gas Limit</h3>
                 <form
                 //  onSubmit={this.handleSubmit}
                 >
@@ -317,7 +279,7 @@ class Contract extends Component {
                   <div>
                     <div className={styles.transactionBox}>
                       <form>
-                        <h3>Raw Transaction</h3>
+                        <h3 className={styles.h3}>Raw Transaction</h3>
                         <textarea
                           className={styles.textarea}
                           type="text"
@@ -330,7 +292,7 @@ class Contract extends Component {
                       <form
                       //  onSubmit={this.handleSubmit}
                       >
-                        <h3>Signed Transaction</h3>
+                        <h3 className={styles.h3}>Signed Transaction</h3>
                         <textarea
                           className={styles.textarea}
                           type="text"
@@ -352,7 +314,7 @@ class Contract extends Component {
                 )}
               </TabPanel>
               <TabPanel className={styles.tabPanel}>
-                <h3>Contact Address</h3>
+                <h3 className={styles.h3}>Contact Address</h3>
                 <form>
                   <input
                     className={styles.input}
@@ -360,7 +322,7 @@ class Contract extends Component {
                     type="text"
                   />
                 </form>
-                <h3>Select Existing Contract</h3>
+                <h3 className={styles.h3}>Select Existing Contract</h3>
                 <form>
                   <input
                     className={styles.input}
@@ -369,7 +331,7 @@ class Contract extends Component {
                     placeholder="Select a Contract"
                   />
                 </form>
-                <h3>ABI / JSON Interface</h3>
+                <h3 className={styles.h3}>ABI / JSON Interface</h3>
                 <form>
                   <textarea className={styles.textarea} type="text" />
                   {this.every('isAuthorized', 'gotDeployedContract') && (
@@ -383,14 +345,14 @@ class Contract extends Component {
                 </form>
               </TabPanel>
             </Tabs>
-          </Container>
+          </div>
         </div>
         {this.every('isAuthorized', 'hasSigned', 'isContractDeployed') && (
-          <DeploySuccess>
-            <DeploySuccessDesc>
-              <FontAweSomeWrap>
+          <div className={styles.deploySuccess}>
+            <div className={styles.deploySuccessDescWrap}>
+              <div className={styles.fontAweSomeWrap}>
                 <i className="fal fa-thumbs-up" />
-              </FontAweSomeWrap>
+              </div>
               <div className={styles.deploySuccessDesc}>
                 Your TX has been broadcast to the network.
                 <br /> 1) Check your TX below. <br />
@@ -413,18 +375,18 @@ class Contract extends Component {
                   {this.get('contractAddress')}
                 </a>
               </div>
-              <FontAweSomeWrap onClick={this.resetAll}>
+              <div className={styles.fontAweSomeWrap} onClick={this.resetAll}>
                 <i className="fal fa-times-circle" />
-              </FontAweSomeWrap>
-            </DeploySuccessDesc>
-          </DeploySuccess>
+              </div>
+            </div>
+          </div>
         )}
         {!this.get('isAuthorized') && (
           <div
             className={styles.containerWrap}
             style={{ paddingTop: 30, paddingBottom: 60 }}>
-            <ContainerBottom>
-              <h2>Access Existing Account</h2>
+            <div className={styles.containerBottom}>
+              <h2 className={styles.h2}>Access Existing Account</h2>
               <Tabs
                 style={{
                   marginTop: 20,
@@ -446,7 +408,9 @@ class Contract extends Component {
                     also use your keystore file and its password.
                   </div>
                   <TabPanel>
-                    <h3>Private Key or HRA Private Key</h3>
+                    <h3 className={styles.h3}>
+                      Private Key or HRA Private Key
+                    </h3>
                     <input
                       className={styles.input}
                       style={{ marginBottom: 30 }}
@@ -460,14 +424,14 @@ class Contract extends Component {
                     />
                   </TabPanel>
                   <TabPanel>
-                    <h3>Import Keystore File (.json)</h3>
+                    <h3 className={styles.h3}>Import Keystore File (.json)</h3>
                     <input
                       type="file"
                       className={styles.file}
                       style={{ marginBottom: 30 }}
                       onChange={this.handleFileChange}
                     />
-                    <h3>Password</h3>
+                    <h3 className={styles.h3}>Password</h3>
                     <input
                       type="password"
                       className={styles.input}
@@ -482,7 +446,7 @@ class Contract extends Component {
                   </TabPanel>
                 </div>
               </Tabs>
-            </ContainerBottom>
+            </div>
           </div>
         )}
       </section>

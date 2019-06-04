@@ -29,9 +29,13 @@ const globalStyles = createGlobalStyle`
     }
     .react-tabs__tab--selected {
         color: #031f42 !important;
-        // box-shadow: 0 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
         border: 1px solid #ccc;
         border-bottom: 0;
+        width: 50%;
+        text-align: center;
+        padding: 25px 10px;
+        font-size: 16px;
+        font-weight: 700;
     }
 `
 export default globalStyles
