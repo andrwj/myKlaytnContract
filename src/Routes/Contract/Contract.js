@@ -18,34 +18,6 @@ library.add(faThumbsUp)
 
 const { caver, baobabNetwork } = Mason
 
-// const Section = styled.section``
-
-// const ContainerWrap = styled.div`
-//   // padding: 100px 40px;
-// `
-// const Container = styled.div``
-// const Tabss = styled(Tab)`
-
-//   // border-bottom: 4px solid #031f42
-//     // ${props => (props.current ? '#031f42' : 'transparent')};
-// `
-
-const ContainerBottom = styled.div``
-
-// const DeploySuccess = styled.div`
-//   width: 100%;
-//   background: #5eda9e;
-//   text-align: center;
-//   padding: 75px 0;
-//   box-shadow: 0.5rem 0.5rem 1.2rem rgba(189, 197, 209, 0.2);
-//   color: #fff;
-//   position: absolute;
-//   bottom: 70px;
-// `
-
-const DeploySuccessDesc = styled.div``
-
-const FontAweSomeWrap = styled.div``
 const defaultValues = {
   showAccessTab: false,
   showSignButton: false,
