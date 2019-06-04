@@ -74,11 +74,12 @@ class Contract extends Component {
 
   // bytecode를 통해 컨트랙을 생성 > TEXTAREA에 bytecode를 넣을 경우
   BytecodeChangeHandler = ({ target: { value } }) => {
-    if (utils.isValidHexString(value)) {
-      Mason.estimateGas(value)
+    const bytecode = String(value).trim();
+    if (utils.isValidHexString(bytecode)) {
+      Mason.estimateGas({data:bytecode, to:Mason.whoami()})
         .then(this.set('gasLimit'))
         .then(this.enable('hasBytecode'))
-        .then(this.sethunk('bytecode', String(value).trim()))
+        .then(this.sethunk('bytecode', bytecode))
         .then(
           this.sethunk(
             'validBytrecodeClassName',
