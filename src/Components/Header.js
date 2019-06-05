@@ -42,7 +42,7 @@ export default withRouter(({ location: { pathname } }) => (
     <List>
       <Item current={pathname === '/'}>
         <SLink to="/">
-          <img src={logo} width="140" />
+          <img src={logo} width="140" onClick={() => window.location.assign('https://insureum.co')}/>
         </SLink>
       </Item>
       {/* <Item current={pathname === '/tv'}>
