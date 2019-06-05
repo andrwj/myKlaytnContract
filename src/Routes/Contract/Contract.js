@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { withRouter } from 'react-router-dom';
 import Router from 'Components/Router';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
@@ -11,8 +11,15 @@ import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import * as R from 'ramda';
 import * as utils from 'Utils/index';
 import * as Mason from 'Utils/mason';
+import Accessor, {handler} from './Accessor';
 
 import styles from './Contract.module.scss';
+import TransactionSignButton from "./TransactionSignButton";
+import InteractWithContractTabPanel from "./InteractWithContractTabPanel";
+import TransactionBox from './TransactionBox';
+import AccountBox from './AccountBox';
+import TxResultBox from "./TxResultBox";
+import MessageBox from "./MessageBox";
 
 library.add(faThumbsUp);
 
@@ -35,47 +42,30 @@ const defaultValues = {
   signedTransaction: '',
   caver: null, // in case ...
   contractAddress: '',
-  transactionHash: ''
+  transactionHash: '',
+  showMessageBox: false,
+  message:'',
+  MessageBoxType: 'info',
 };
 
-class Contract extends Component {
+class Contract extends Accessor {
   constructor(props) {
     super(props);
     this.state = Object.assign({}, defaultValues);
     caver(baobabNetwork());
   }
 
-  every = (...args) => args.every(name => !!this.state[name]);
-  sethunk = R.curry((name, value, _) => this.setState({ [name]: value }));
-  gethunk = R.curry((name, _) => this.state[name]);
-  enable = R.curry((name, _) => this.setState({ [name]: true }));
-  disable = R.curry((name, _) => this.setState({ [name]: false }));
-  toggle = R.curry((values, name) =>
-    this.setState({
-      [name]: values[1 - (Object.is(!!this.state[name], true) ? 1 : 0)]
-    })
-  );
-  get = name => this.state[name];
-  set = R.curry((name, value) =>
-    Object.is(value, undefined)
-      ? this.state[name]
-      : this.setState({ [name]: value })
-  );
-  Set = args =>
-    this.setState(
-      Object.entries(args)
-        .map(([k, v]) => ({ [k]: v }))
-        .reduce((acc, el) => Object.assign(acc, el), {})
-    );
-
   toggleAccessTab = () => this.toggle([false, true], 'showAccessTab');
-  resetAll = () => this.Set(defaultValues);
+  resetAll = () => {
+    window.location.reload();
+    //this.setState(defaultValues);
+  };
   preparing = () => alert('준비중입니다');
 
   // bytecode를 통해 컨트랙을 생성 > TEXTAREA에 bytecode를 넣을 경우
   BytecodeChangeHandler = ({ target: { value } }) => {
     const bytecode = String(value).trim();
-    if (utils.isValidHexString(bytecode)) {
+    if (bytecode.length > 512 && utils.isValidHexString(bytecode)) {
       Mason.estimateGas({data:bytecode, to:Mason.whoami()})
         .then(this.set('gasLimit'))
         .then(this.enable('hasBytecode'))
@@ -87,7 +77,7 @@ class Contract extends Component {
           )
         )
         .catch(e => {
-          this.Set({
+          this.setState({
             gasLimit: 0,
             hasBytecode: false,
             bytecode: '',
@@ -95,14 +85,15 @@ class Contract extends Component {
           })
         })
     } else {
-      this.Set({
+      this.setState({
         gasLimit: 0,
         hasBytecode: false,
+        hasSigned: false,
         bytecode: '',
         validBytrecodeClassName: styles.textarea
       })
     }
-  }
+  };
 
   // 사용자가 bytecode의 gasLimit값을 직접 수정해서 넣었을 경우
   // TODO: validation check
@@ -119,7 +110,7 @@ class Contract extends Component {
     fileReader.readAsText(path);
     fileReader.onload = ({ target: { result } }) => {
       try {
-        this.state.keystore = Mason.getKeystoreFromString(result);
+        this.setState({keystore: Mason.getKeystoreFromString(result)});
         // focus on password input field
       } catch (event) {
         this.get('password');
@@ -137,8 +128,10 @@ class Contract extends Component {
         this.get('keystore'),
         this.get('password')
       );
-      this.Set({ caver: verified, isAuthorized: !!verified })
-    } catch (e) {}
+      this.setState({ caver: verified, isAuthorized: !!verified });
+    } catch (e) {
+      this.warningBox(e);
+    }
   };
 
   // 개인 인증을 PrivateKey로 선택했을 때
@@ -149,45 +142,59 @@ class Contract extends Component {
   authByPrivateKey = () => {
     try {
       const verified = Mason.privateKeyToAccount(this.get('privateKey'));
-      this.Set({ caver: verified, isAuthorized: !!verified })
-    } catch (e) {}
+      this.setState({ caver: verified, isAuthorized: !!verified });
+      this.infoBox(`Account on BaobabNetwork: ${Mason.whoami()}`);
+    } catch (e) {
+      this.setState({isAuthorized:false});
+      this.warningBox(e);
+    }
   };
 
   signTransaction = () => {
-    if (!this.get('isAuthorized')) return
-
-    const payload = {
+    if (!this.get('isAuthorized')) return;
+    const changes = {
       data: this.get('bytecode'),
       gas: this.get('gasLimit'),
       from: caver().klay.defaultAccount,
       value: '0x00'
     };
-    Mason.signTransaction(payload)
+    Mason.signTransaction(changes)
       .then(R.tap(tx => console.log(JSON.stringify(tx))))
       .then(({ rawTransaction }) => {
-        this.Set({
+        this.setState({
           hasSigned: true,
-          rawTransaction: Object.assign({}, payload, { to: null }),
+          rawTransaction: Object.assign({}, changes, { to: null }),
           signedTransaction: rawTransaction
         })
       })
       .catch(e => {
-        this.Set({ hasSigned: false, rawTransaction: '' });
-        console.log(e)
+        this.warningBox(e);
+        this.setState({ hasSigned: false, rawTransaction: '' });
       })
   };
 
   deployContract = () => {
+    this.infoBox('Deploying signed contract ...');
     Mason.sendSignedTransaction(this.get('signedTransaction'))
       .then(R.tap(tx => console.log(JSON.stringify(tx))))
-      .then(({ contractAddress, transactionHash }) =>
-        this.Set({ contractAddress, transactionHash })
-      )
+      .then(({ contractAddress, transactionHash }) => {
+        this.hideMessageBox();
+        this.setState({ contractAddress, transactionHash });
+      })
       .then(this.enable('isContractDeployed'))
-      .catch(console.log)
+      .catch(this.warningBox)
   };
 
   Klaytnscope = (type, addr) => `https://baobab.klaytnscope.com/${type}/${addr}`;
+  hideMessageBox = () => this.setState({showMessageBox: false});
+  infoBox = (message) => {
+    this.setState({showMessageBox: true, message, MessageBoxType: 'info'});
+    utils.sleep(3000).then(this.hideMessageBox);
+  };
+  warningBox = (message) => {
+    this.setState({showMessageBox: true, message, MessageBoxType: 'warning'});
+    utils.sleep(5000).then(this.hideMessageBox);
+  };
 
   render() {
     return (
@@ -229,9 +236,7 @@ class Contract extends Component {
                   />
                 </form>
                 <h3 className={styles.h3}>Gas Limit</h3>
-                <form
-                //  onSubmit={this.handleSubmit}
-                >
+                <form>
                   <input
                     className={styles.input}
                     type="text"
@@ -239,195 +244,45 @@ class Contract extends Component {
                     value={this.state.gasLimit}
                     onChange={this.handleGasLimitChange}
                   />
-                  {this.every('isAuthorized', 'hasBytecode') && (
-                    <input
-                      className={styles.submit}
-                      type="button"
-                      value="Sign Transaction"
-                      onClick={this.signTransaction}
-                    />
-                  )}
+                  <TransactionSignButton
+                    visible={this.every('isAuthorized', 'hasBytecode')}
+                    disabled={this.some('isContractDeployed', 'hasSigned')}
+                    onClick={handler(this, this.signTransaction)}
+                  />
                 </form>
-                {this.every('isAuthorized', 'hasBytecode', 'hasSigned') && (
-                  <div>
-                    <div className={styles.transactionBox}>
-                      <form>
-                        <h3 className={styles.h3}>Raw Transaction</h3>
-                        <textarea
-                          className={styles.textarea}
-                          type="text"
-                          value={JSON.stringify(this.get('rawTransaction'))}
-                          disabled
-                          onChange={() => void 0}
-                        />
-                      </form>
-
-                      <form
-                      //  onSubmit={this.handleSubmit}
-                      >
-                        <h3 className={styles.h3}>Signed Transaction</h3>
-                        <textarea
-                          className={styles.textarea}
-                          type="text"
-                          value={this.get('signedTransaction')}
-                          disabled
-                          onChange={() => void 0}
-                        />
-                      </form>
-                    </div>
-                    <input
-                      className={styles.submit}
-                      style={{ margin: 0 }}
-                      type="submit"
-                      value="Deploy Contract"
-                      disabled={this.get('isContractDeployed')}
-                      onClick={this.deployContract}
-                    />
-                  </div>
-                )}
+                <TransactionBox
+                  visible={this.every('isAuthorized', 'hasBytecode', 'hasSigned')}
+                  rawTransaction={this.get('rawTransaction')}
+                  signedTransaction={this.get('signedTransaction')}
+                  disabled={this.get('isContractDeployed')}
+                  onClick={handler(this, this.deployContract)}
+                />
               </TabPanel>
-              {/*<TabPanel className={styles.tabPanel}>*/}
-              {/*  <h3 className={styles.h3}>Contact Address</h3>*/}
-              {/*  <form>*/}
-              {/*    <input*/}
-              {/*      className={styles.input}*/}
-              {/*      style={{ marginBottom: 30 }}*/}
-              {/*      type="text"*/}
-              {/*    />*/}
-              {/*  </form>*/}
-              {/*  <h3 className={styles.h3}>Select Existing Contract</h3>*/}
-              {/*  <form>*/}
-              {/*    <input*/}
-              {/*      className={styles.input}*/}
-              {/*      style={{ marginBottom: 30 }}*/}
-              {/*      type="text"*/}
-              {/*      placeholder="Select a Contract"*/}
-              {/*    />*/}
-              {/*  </form>*/}
-              {/*  <h3 className={styles.h3}>ABI / JSON Interface</h3>*/}
-              {/*  <form>*/}
-              {/*    <textarea className={styles.textarea} type="text" />*/}
-              {/*    {this.every('isAuthorized', 'gotDeployedContract') && (*/}
-              {/*      <input*/}
-              {/*        className={styles.submit}*/}
-              {/*        style={{ margin: 0 }}*/}
-              {/*        type="submit"*/}
-              {/*        value="Access"*/}
-              {/*      />*/}
-              {/*    )}*/}
-              {/*  </form>*/}
-              {/*</TabPanel>*/}
+              <InteractWithContractTabPanel visiable={false}/>
             </Tabs>
           </div>
         </div>
-        {this.every('isAuthorized', 'hasSigned', 'isContractDeployed') && (
-          <div className={styles.messageBox}>
-            {/* warning일때, className="warningBox"  */}
-            {/* information일때, className="infoBox"  */}
-            <div className={styles.boxDescWrap}>
-              <div className={styles.fontAweSomeWrap}>
-                <i className="fal fa-thumbs-up" />
-                {/* warning 일때  */}
-                {/* <i class="fal fa-exclamation-triangle" /> */}
-                {/* information 일때  */}
-                {/* <i class="fal fa-info-circle" /> */}
-              </div>
-              <div className={styles.boxDesc}>
-                Your TX has been broadcast to the network.
-                <br /> 1) Check your TX below. <br />
-                2) If it is pending for minutes or disappears, use the Check TX
-                Status Page to replace. <br />
-                3) Save your Transaction Hash in case you need it later:{' '}
-                <a
-                  href={this.Klaytnscope('tx', this.get('transactionHash'))}
-                  target="_blank">
-                  {this.get('transactionHash')}
-                </a>{' '}
-                <br />
-                4) View your transaction & Contract Address:{' '}
-                <a
-                  href={this.Klaytnscope(
-                    'account',
-                    this.get('contractAddress')
-                  )}
-                  target="_blank">
-                  {this.get('contractAddress')}
-                </a>
-              </div>
-              <div className={styles.fontAweSomeWrap} onClick={this.resetAll}>
-                <i className="fal fa-times-circle" />
-              </div>
-            </div>
-          </div>
-        )}
-        {!this.get('isAuthorized') && (
-          <div
-            className={styles.containerWrap}
-            style={{ paddingTop: 30, paddingBottom: 60 }}>
-            <div className={styles.containerBottom}>
-              <h2 className={styles.h2}>Access Existing Account</h2>
-              <Tabs
-                style={{
-                  marginTop: 20,
-                  display: 'flex',
-                  flexDirection: 'row'
-                }}>
-                <TabList className={styles.accountTabs}>
-                  <Tab className={styles.accountTab}>
-                    Sign-in Using Private Key
-                  </Tab>
-                  <Tab className={styles.accountTab}>
-                    Sign-in Using Keystore File
-                  </Tab>
-                </TabList>
-                <div style={{ flex: 1.3, padding: '0 30px' }}>
-                  <div className={styles.description} style={{ paddingTop: 0 }}>
-                    You can access your account using your private key or Klaytn
-                    HRA Private Key (for custom address accounts). Or you can
-                    also use your keystore file and its password.
-                  </div>
-                  <TabPanel>
-                    <h3 className={styles.h3}>
-                      Private Key or HRA Private Key
-                    </h3>
-                    <input
-                      className={styles.input}
-                      style={{ marginBottom: 30 }}
-                      onChange={this.handlePrivateKeyChange}
-                    />
-                    <input
-                      className={styles.submit}
-                      type="submit"
-                      value="Access"
-                      onClick={this.authByPrivateKey}
-                    />
-                  </TabPanel>
-                  <TabPanel>
-                    <h3 className={styles.h3}>Import Keystore File (.json)</h3>
-                    <input
-                      type="file"
-                      className={styles.file}
-                      style={{ marginBottom: 30 }}
-                      onChange={this.handleFileChange}
-                    />
-                    <h3 className={styles.h3}>Password</h3>
-                    <input
-                      type="password"
-                      className={styles.input}
-                      onBlur={this.handlePasswordChange}
-                    />
-                    <input
-                      className={styles.submit}
-                      type="submit"
-                      value="Access"
-                      onClick={this.authByKeystore}
-                    />
-                  </TabPanel>
-                </div>
-              </Tabs>
-            </div>
-          </div>
-        )}
+        <MessageBox
+          visible={this.state.showMessageBox}
+          message={this.state.message}
+          type={this.state.MessageBoxType}
+          onClick={handler(this, this.hideMessageBox)}
+        />
+        <TxResultBox
+          visible={this.every('isAuthorized', 'hasSigned', 'isContractDeployed')}
+          onClick={handler(this, this.resetAll)}
+          transactionHash={this.state.transactionHash}
+          contractAddress={this.state.contractAddress}
+          Klaytnscope={handler(this, this.Klaytnscope)}
+        />
+        <AccountBox
+          handlePrivateKeyChange={handler(this, this.handlePrivateKeyChange)}
+          authByPrivateKey={handler(this, this.authByPrivateKey)}
+          handleFileChange={handler(this, this.handleFileChange)}
+          handlePasswordChange={handler(this, this.handlePasswordChange)}
+          authByKeystore={handler(this, this.authByKeystore)}
+          visible={!this.state.isAuthorized}
+        />
       </section>
     )
   }

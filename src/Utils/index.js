@@ -21,6 +21,10 @@ export const toggleClassName = (cls, target) => (String(cls).indexOf(target) ===
 
 export const IfElse = (f, onTrue, onFalse) => f ? onTrue : onFalse;
 
+export const mixin = (...mixins) => (function() { return Object.assign(function(){}, ...mixins); })();
+
+export const attach = (scope, from, ...methods) => methods.reduce((mixin, m)=> { mixin[m] = from[m]; return mixin}, scope);
+
 export default {
 
 }
