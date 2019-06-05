@@ -57,15 +57,15 @@ class Contract extends Accessor {
 
   toggleAccessTab = () => this.toggle([false, true], 'showAccessTab');
   resetAll = () => {
-    window.location.reload();
-    //this.setState(defaultValues);
+    //window.location.reload();
+    this.setState(Object.assign({}, defaultValues, {isAuthorized: true}));
   };
   preparing = () => alert('준비중입니다');
 
   // bytecode를 통해 컨트랙을 생성 > TEXTAREA에 bytecode를 넣을 경우
   BytecodeChangeHandler = ({ target: { value } }) => {
     const bytecode = String(value).trim();
-    if (bytecode.length > 512 && utils.isValidHexString(bytecode)) {
+    if (bytecode.length > 256 && utils.isValidHexString(bytecode)) {
       Mason.estimateGas({data:bytecode, to:Mason.whoami()})
         .then(this.set('gasLimit'))
         .then(this.enable('hasBytecode'))
@@ -88,10 +88,11 @@ class Contract extends Accessor {
       this.setState({
         gasLimit: 0,
         hasBytecode: false,
-        hasSigned: false,
         bytecode: '',
-        validBytrecodeClassName: styles.textarea
-      })
+        hasSigned: false,
+        validBytrecodeClassName: styles.textarea,
+      });
+      this.warningBox(`Invalid Byte Codes.`);
     }
   };
 
@@ -122,15 +123,17 @@ class Contract extends Accessor {
   // TODO: focus 떠날 때 값을 받을 것
   handlePasswordChange = ({ target: { value } }) => this.set('password', value);
 
-  authByKeystore = e => {
+  authByKeystore = () => {
     try {
       const verified = /*caver object */ Mason.authenticate(
         this.get('keystore'),
         this.get('password')
       );
       this.setState({ caver: verified, isAuthorized: !!verified });
+      this.infoBox(`Account on BaobabNetwork: ${Mason.whoami()}`);
     } catch (e) {
-      this.warningBox(e);
+      this.warningBox(`Failed to authenticate. Wrong Password?`);
+      console.log(e);
     }
   };
 
@@ -146,7 +149,7 @@ class Contract extends Accessor {
       this.infoBox(`Account on BaobabNetwork: ${Mason.whoami()}`);
     } catch (e) {
       this.setState({isAuthorized:false});
-      this.warningBox(e);
+      this.warningBox(`Failed to authenticate. Invalid Private Key?`);
     }
   };
 
@@ -182,18 +185,23 @@ class Contract extends Accessor {
         this.setState({ contractAddress, transactionHash });
       })
       .then(this.enable('isContractDeployed'))
-      .catch(this.warningBox)
+      .catch(e => {
+        console.log(e);
+        this.warningBox(`Deploy failed. Please refer output in console.log`)
+          .then(this.resetAll);
+
+      })
   };
 
   Klaytnscope = (type, addr) => `https://baobab.klaytnscope.com/${type}/${addr}`;
   hideMessageBox = () => this.setState({showMessageBox: false});
   infoBox = (message) => {
     this.setState({showMessageBox: true, message, MessageBoxType: 'info'});
-    utils.sleep(3000).then(this.hideMessageBox);
+    return utils.sleep(3000).then(this.hideMessageBox);
   };
   warningBox = (message) => {
     this.setState({showMessageBox: true, message, MessageBoxType: 'warning'});
-    utils.sleep(5000).then(this.hideMessageBox);
+    return utils.sleep(5000).then(this.hideMessageBox);
   };
 
   render() {
