@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@andrwj/fp@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@andrwj/fp/-/fp-0.0.5.tgz#a524677e4fe911a231e19e37c660cbad00489bbe"
-  integrity sha512-+Q1xUnfhdn9K3YJeb01icPCOqQ0zjW9D4IQRGT//jd2n/sQy0/TVVU50CA1m+goTFXw9X7Hd+LJaBaRWEww/9A==
+"@andrwj/fp@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@andrwj/fp/-/fp-0.0.6.tgz#d13913a9287ffeab0430e97704f44c51ad5b21ca"
+  integrity sha512-ChsieZQ8Q/OQI5rT35Z+MrqRuZZChEKL1PyD9utI3I1bao3UJkqB7l2lr3gOby45+iEUU+dhkIB8FOHZEi7vFA==
   dependencies:
     esm "^3.2.22"
     ramda "^0.26.1"
