@@ -82,8 +82,8 @@ class Contract extends Accessor {
             hasBytecode: false,
             bytecode: '',
             validBytrecodeClassName: styles.textarea
-          })
-        })
+          });
+        });
     } else {
       this.setState({
         gasLimit: 0,
@@ -114,9 +114,10 @@ class Contract extends Accessor {
         this.setState({keystore: Mason.getKeystoreFromString(result)});
         // focus on password input field
       } catch (event) {
-        this.get('password');
+        console.log(JSON.stringify(event));
+        this.warningBox(`Error while reading keystore file. Please refer console.log output`);
       }
-    }
+    };
   }
 
   // 사용자의 PC에 저장된 Keystore (JSON) 파일을 읽어 들인 후, 비밀번호 입력할 때
@@ -168,12 +169,12 @@ class Contract extends Accessor {
           hasSigned: true,
           rawTransaction: Object.assign({}, changes, { to: null }),
           signedTransaction: rawTransaction
-        })
+        });
       })
       .catch(e => {
         this.warningBox(e);
         this.setState({ hasSigned: false, rawTransaction: '' });
-      })
+      });
   };
 
   deployContract = () => {
@@ -189,8 +190,7 @@ class Contract extends Accessor {
         console.log(e);
         this.warningBox(`Deploy failed. Please refer output in console.log`)
           .then(this.resetAll);
-
-      })
+      });
   };
 
   Klaytnscope = (type, addr) => `https://baobab.klaytnscope.com/${type}/${addr}`;
@@ -292,8 +292,8 @@ class Contract extends Accessor {
           visible={!this.state.isAuthorized}
         />
       </section>
-    )
+    );
   }
 }
 
-export default Contract
+export default Contract;
