@@ -1,10 +1,15 @@
 import React from 'react';
 import Select from 'react-select'; //https://react-select.com/styles
+import * as R from 'ramda';
 
 import Accessor from './Accessor';
 import RunCommand from './RunCommand';
+import { Either } from '../../FP/FP';
 
 import styles from './Contract.module.scss';
+
+const lensReturnType = R.lensPath(['outputs', 0, 'type']);
+const lensInputs = R.lensProp('inputs');
 
 class ReadWriteContract extends Accessor {
 
@@ -23,8 +28,10 @@ class ReadWriteContract extends Accessor {
   selectedMethod = () => this.state.selected;
 
   render() {
-    // if(!this.props.visible) return '';
+    if(!this.props.visible) return '';
+
     const { selected } = this.state;
+
     return (
 
       <div style={{marginTop: '3em'}}>
@@ -41,8 +48,10 @@ class ReadWriteContract extends Accessor {
           // styles={{container: () => ({width: `500px`, fontSize: '1.2em'})}}
         />
         <RunCommand
+          inputs={R.view(lensInputs, selected)||[]}
+          returnType={R.view(lensReturnType, this.state.selected)}
+          returnValue=''
           command={this.state.selected}
-          warningBox={this.props.warningBox}
         />
       </div>
     )
