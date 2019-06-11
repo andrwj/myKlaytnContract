@@ -1,10 +1,36 @@
 import React, {Component} from 'react';
 import * as R from 'ramda';
 
+const prototypes = (() => {
+  const stack = [];
+
+  return (self, method) => {
+    if(Object.is(self, undefined) && method) {
+      console.log(`searching ${method}...`);
+      const base = stack.find(s => s[method]);
+      if(!base) throw Error(`${method} is not in stack!`);
+      console.log(`found ${method}`);
+      return base[method];
+    }
+    if( !stack.find(s => s === self) ) {
+      stack.push(self);
+      console.log(`pushed:`, self)
+    }
+  };
+})();
+
 class Accessor extends Component {
-  constructor(props) {
-    super(props);
+  constructor(...props) {
+    super(...props);
+    this.__register_methods__()
   }
+  __register_methods__ () {
+      prototypes(this);
+  }
+
+  $ = (method) => {
+    return prototypes(undefined, method);
+  };
 
   componentWillReceiveProps(props) {
     const changes = Object.entries(props)

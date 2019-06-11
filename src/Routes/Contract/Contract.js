@@ -62,6 +62,10 @@ class Contract extends Accessor {
     caver(baobabNetwork());
   }
 
+  caver = (url)  => caver(url);
+  ABI = () => this.state.ABI;
+  contractAddress = () => this.state.contractAddress;
+
   toggleAccessTab = () => this.toggle([false, true], 'showDeployContractTab');
   resetAll = () => {
     //window.location.reload();
@@ -154,7 +158,7 @@ class Contract extends Accessor {
     try {
       const verified = Mason.privateKeyToAccount(this.get('privateKey'));
       this.setState({ caver: verified, isAuthorized: !!verified });
-      this.infoBox(`Account on BaobabNetwork: ${Mason.whoami()}`);
+      this.infoBox(`Account on BaobabNetwork: ${Mason.whoami()}`, 1000);
     } catch (e) {
       this.setState({isAuthorized:false});
       this.warningBox(`Failed to authenticate. Invalid Private Key?`);
@@ -250,7 +254,6 @@ class Contract extends Accessor {
 
   handleContractAddress = ({ target: { value } }) => {
       Either.of(address => /^0x[0-9a-fA-F]{40}$/.test(address), value)
-        .filter(address => String(address).length === 42)
         .fold((address) => {
             this.setState({
               contractAddress: address,

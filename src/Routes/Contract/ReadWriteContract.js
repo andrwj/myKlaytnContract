@@ -15,10 +15,12 @@ class ReadWriteContract extends Accessor {
     };
   }
 
-  handleChange = selected => {
+  handleMethodSelectBoxChange = selected => {
     this.setState({ selected });
-    console.log(selected);
+    console.log('selected', selected);
   };
+
+  selectedMethod = () => this.state.selected;
 
   render() {
     // if(!this.props.visible) return '';
@@ -32,8 +34,8 @@ class ReadWriteContract extends Accessor {
         </div>
         <Select
           isSearchable={true}
-          value={selected}
-          onChange={this.handleChange}
+          value={selected||{}}
+          onChange={this.handleMethodSelectBoxChange}
           options={this.props.ABI||[]}
           placeholder='Select a function'
           // styles={{container: () => ({width: `500px`, fontSize: '1.2em'})}}

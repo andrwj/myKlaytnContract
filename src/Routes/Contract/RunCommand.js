@@ -23,7 +23,7 @@ class RunCommand extends Accessor {
             inputs={R.view(lensInputs, cmd)||[]}
             returnType={R.view(lensReturnType, cmd)}
             returnValue=''
-            warningBox={this.props.warningBox}
+            command={this.props.command}
           />
         ,
         (cmd) =>
@@ -31,7 +31,7 @@ class RunCommand extends Accessor {
              inputs={R.view(lensInputs, cmd)||[]}
              returnType={R.view(lensReturnType, cmd)}
              returnValue=''
-             warningBox={this.props.warningBox}
+             command={this.props.command}
            />
       );
   }

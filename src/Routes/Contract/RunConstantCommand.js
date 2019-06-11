@@ -4,6 +4,7 @@ import * as R from 'ramda';
 import ReactRadioButtonGroup from './react-radio-button-group';
 import Accessor from './Accessor';
 import { Either } from '../../FP/FP';
+import * as Mason from '../../Utils/mason';
 
 import styles from './Contract.module.scss';
 
@@ -26,11 +27,11 @@ const buildArguments = (/*DOM collection object*/inputs) => {
       Either
         .of(({type}) => type==='radio', el)
         .fold(
-          ({name, value, dataset:{type}}) => acc.push({name, value, type}),
-          // ({value}) => acc.push(value),
-          ({name, value, checked})=>{
-            if(checked) acc.push({name, 'value': (value.toLowerCase()==='true'), type: 'bool'})
-            // if(checked) acc.push(value.toLowerCase()==='true');
+          // ({name, value, dataset:{type}}) => acc.push({name, value, type}),
+          ({value}) => acc.push(value),
+          ({value, checked})=>{
+            // if(checked) acc.push({name, 'value': (value.toLowerCase()==='true'), type: 'bool'})
+            if(checked) acc.push(value.toLowerCase()==='true');
           }
         );
       return acc;},[]);
@@ -56,10 +57,19 @@ const Validators = R.curry((type, value) => {
         .fold(()=>[false, 'Please use only number characters (0-9).'],
           () => [true, 'ok']);
     },
+    'address': (v) => {
+      return Either
+        .fromNullable(v)
+        .map(v => (v).trim())
+        .filter(v => v.length)
+        .filter(address => /^0x[0-9a-fA-F]{40}$/.test(address))
+        .fold(()=>[false, 'Please use valid address for Klaytn Network.'],
+          () => [true, 'ok']);
+    },
   }[type](value);
 });
 
-class RunContantCommand extends Accessor {
+class RunConstantCommand extends Accessor {
 
   constructor(args) {
     super(args);
@@ -70,15 +80,21 @@ class RunContantCommand extends Accessor {
   }
 
   execCommand (event) {
-    try {
-      const id = event.target.id;
-      const args = buildArguments(document.getElementById(id).elements);
-      console.log(`ARGS: ${JSON.stringify(args)}`);
-
-    } catch(e) {
-      console.log(`try/catch; ${e}`)
-    }
     event.preventDefault();
+    console.log('this:', this);
+
+      const {id} = event.target;
+      const {name:method} = this.props.command;
+      const ARGS = buildArguments(document.getElementById(id).elements);
+      const caver = this.$('caver')();
+      const ABI = this.$('ABI')();
+      const address =  this.$('contractAddress')();
+      const owner = caver.klay.defaultAccount;
+      const opts = {from: owner, gasPrice: '25000000000000'};
+      const KC = new caver.klay.Contract(ABI, address, opts);
+      KC.methods[method](...ARGS).call(opts)
+        .then(console.log)
+        .catch(console.log);
   };
 
   validate (t) {
@@ -104,7 +120,7 @@ class RunContantCommand extends Accessor {
         .of(([ok, ]) => ok, validator(value))
         .fold(
           ([,message]) => {
-            this.props.warningBox(message);
+            this.$('warningBox')(message);
             return false;
           },
           () => true,
@@ -117,7 +133,7 @@ class RunContantCommand extends Accessor {
 
     return (
       <div style={{margin:'2em 0 1em 0em'}} >
-        <form id={`formCommand${this.id}`} onSubmit={this.execCommand}>
+        <form id={`formCommand${this.id}`} onSubmit={this.execCommand.bind(this)}>
           {this.props.inputs.map((input,idx) =>
             <div key={String(idx)}>
               <span style={inputNameStyle}>{input.name}</span>&nbsp;&nbsp;<span style={inputTypeStyle}>{input.type}</span>
@@ -156,7 +172,7 @@ class RunContantCommand extends Accessor {
             className={styles.submit}
             style={{ margin: '2em 0 0 0' }}
             type="submit"
-            value="Write"
+            value="Read"
           />
         </form>
       </div>
@@ -164,4 +180,4 @@ class RunContantCommand extends Accessor {
   }
 }
 
-export default RunContantCommand;
+export default RunConstantCommand;
