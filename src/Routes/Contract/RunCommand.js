@@ -3,7 +3,7 @@ import * as R from 'ramda';
 
 import ReactRadioButtonGroup from './react-radio-button-group';
 import Accessor from './Accessor';
-import { Either } from '../../FP/FP';
+import { Either, tryCatch, identity,revoke, truth } from '../../FP/FP';
 import * as Mason from '../../Utils/mason';
 
 import styles from './Contract.module.scss';
@@ -16,7 +16,8 @@ const inputStyle = {
 const inputNameStyle = {fontWeight:600, fontSize: '1.2em'};
 const inputTypeStyle = {fontWeight:300, fontSize: '1.2em'};
 
-let instanceId = 0;
+const commandFormId = 'formCommand1';
+const lensTransactionHash = R.lensProp('transactionHash');
 
 const buildArguments = (/*DOM collection object*/inputs) => {
   return [...inputs]
@@ -28,7 +29,10 @@ const buildArguments = (/*DOM collection object*/inputs) => {
         .of(({type}) => type==='radio', el)
         .fold(
           // ({name, value, dataset:{type}}) => acc.push({name, value, type}),
-          ({value}) => acc.push(value),
+          ({name, value}) => {
+            if(!value) throw new Error(`Empty value for parameter '${name}`);
+            acc.push(value);
+            },
           ({value, checked})=>{
             // if(checked) acc.push({name, 'value': (value.toLowerCase()==='true'), type: 'bool'})
             if(checked) acc.push(value.toLowerCase()==='true');
@@ -71,50 +75,69 @@ const Validators = R.curry((type, value) => {
 
 class RunCommand extends Accessor {
 
-  constructor(args) {
-    super(args);
+  constructor(...args) {
+    super(...args);
     this.state = {
-
+      returnValue: '',
     };
-    this.id = instanceId++;
   }
 
-  execCommand (event) {
-    event.preventDefault();
-    console.log('this:', this);
+  execCommand (command) {
+    if(!command) return;
+    const {name:method, constant:isReadFunction} = command;
+    const ARGS = buildArguments(document.getElementById(commandFormId).elements);
+    const caver = this.$('caver')();
+    const ABI = this.$('ABI')();
+    const address =  this.$('contractAddress')();
+    const owner = caver.klay.defaultAccount;
+    const opts = {from: owner, /*fix for now*/gas: '15000000'};
+    const KC = new caver.klay.Contract(ABI, address, opts);
+    const interfaceCall = isReadFunction ? 'call' : 'send';
 
-      const {id} = event.target;
-      const {name:method} = this.props.command;
-      const ARGS = buildArguments(document.getElementById(id).elements);
-      const caver = this.$('caver')();
-      const ABI = this.$('ABI')();
-      const address =  this.$('contractAddress')();
-      const owner = caver.klay.defaultAccount;
-      const opts = {from: owner, gasPrice: '25000000000000'};
-      const KC = new caver.klay.Contract(ABI, address, opts);
-      KC.methods[method](...ARGS).call(opts)
-        .then(console.log)
-        .catch(console.log);
+    this.$('infoBox')(`calling ${method}() ...`, 5000);
+
+    Promise.resolve(opts)
+      .then(KC.methods[method](...ARGS)[interfaceCall])
+      .then(tx => {
+        this.$('hideMessageBox')();
+        const result = isReadFunction ? tx : R.view(lensTransactionHash, tx);
+        console.log(`tx ==>`, result);
+        this.setState({returnValue: result});
+      })
+      .catch(e => {
+        this.$('hideMessageBox')();
+        console.log(e);
+        this.setState({returnValue: ''});
+        this.$('warningBox')(`We got an exception while calling method '${method}()'. Please refer output of console.log`, 3000);
+      });
+  };
+
+  submitHandler = (event) => {
+    event.preventDefault();
+    this.execCommand(this.props.command);
   };
 
   validate (t) {
     const type = Either
-      .of(v => v === 'string', t)
-      .fold((v) => Either
-        .of(v => v.indexOf('uint') !== -1, v)
-        .fold((v) => {
-            const message =`getValidator(${v}), and is not supported yet. Stop`;
-            console.log(message);
-            throw new Error(message);
-          }, () => 'number')
-      , () => 'string'
-      );
+      .of(t=> t.indexOf('uint') === -1, t) //uint8, uint32, uint128, ...
+      .fold(
+        () => Either.right('number'),
+        (t) => Either.of(t => ['string', 'bool', 'address'].find(supported => t.indexOf(supported)), t)
+          .fold(
+            (t) => {
+              const message =`getValidator(${t}), and is not supported yet. Stop`;
+              console.log(message);
+              throw new Error(message);
+              },
+            (t) => Either.right(t)
+          )
+      ).fold(identity, identity);
 
     const validator = Validators(type);
 
     return (domEl) => {
       const {target: {value, name}} = domEl;
-      console.log(`got ${value} from ${name}`);
+      // console.log(`got ${value} from ${name}`);
 
       return Either
         .of(([ok, ]) => ok, validator(value))
@@ -133,12 +156,25 @@ class RunCommand extends Accessor {
     return this.props.command.constant ? 'Read' : 'Write';
   };
 
-  render() {
-    console.log(this.props.inputs);
+  handleCommandReturnValue = () => {
+    // when selected command, constant=true, has no argument, execute it for displaying return value.
+    this.setState({returnValue: ''});
+    // const {command} = this.state;
+    // Either.of(v=>v && !v.length, this.getFormInputElements(commandFormId))
+    //   .chain(() => tryCatch(({constant})=> constant, command))
+    //   .chain(tryCatch(this.execCommand, command));
+  };
 
+  // get DOM elements of 'input' tag in <form id={commandFormId}>
+  getFormInputElements = (id=commandFormId) =>
+    tryCatch(id => document.getElementById(id).elements, id)
+      .fold(revoke, identity);
+
+
+  render() {
     return (
       <div style={{margin:'2em 0 1em 0em'}} >
-        <form id={`formCommand${this.id}`} onSubmit={this.execCommand.bind(this)}>
+        <form id={commandFormId} onSubmit={this.submitHandler.bind(this)}>
           {this.props.inputs.map((input,idx) =>
             <div key={String(idx)}>
               <span style={inputNameStyle}>{input.name}</span>&nbsp;&nbsp;<span style={inputTypeStyle}>{input.type}</span>
@@ -151,7 +187,7 @@ class RunCommand extends Accessor {
                                              options={['False', 'True']}
                                              isStateful={true}
                                              value='False'
-                                             onChange={(item) => console.log("New value: ", item)}
+                                             onChange={()=> void(0)}
                                              groupClassName={styles.radioBG_Group}
                                              itemClassName={styles.radioBG_Item}
                                              labelClassName={styles.radioBG_Label}
@@ -169,7 +205,7 @@ class RunCommand extends Accessor {
               type='text'
               style={inputStyle}
               disabled={true}
-              value={this.props.returnValue}
+              value={this.state.returnValue}
             />
           </div>
           <input

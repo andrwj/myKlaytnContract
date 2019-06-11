@@ -6,15 +6,15 @@ const prototypes = (() => {
 
   return (self, method) => {
     if(Object.is(self, undefined) && method) {
-      console.log(`searching ${method}...`);
+      // console.log(`searching ${method}...`);
       const base = stack.find(s => s[method]);
       if(!base) throw Error(`${method} is not in stack!`);
-      console.log(`found ${method}`);
+      // console.log(`found ${method}`);
       return base[method];
     }
     if( !stack.find(s => s === self) ) {
       stack.push(self);
-      console.log(`pushed:`, self)
+      // console.log(`pushed:`, self)
     }
   };
 })();

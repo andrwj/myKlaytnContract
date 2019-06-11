@@ -71,7 +71,6 @@ class Contract extends Accessor {
     //window.location.reload();
     this.setState(Object.assign({}, defaultValues, {isAuthorized: true}));
   };
-  preparing = () => alert('준비중입니다');
 
   // bytecode를 통해 컨트랙을 생성 > TEXTAREA에 bytecode를 넣을 경우
   BytecodeChangeHandler = ({ target: { value } }) => {
@@ -142,9 +141,9 @@ class Contract extends Accessor {
         this.get('password')
       );
       this.setState({ caver: verified, isAuthorized: !!verified });
-      this.infoBox(`Account on BaobabNetwork: ${Mason.whoami()}`);
+      this.infoBox(`Account on BaobabNetwork: ${Mason.whoami()}`, 2000);
     } catch (e) {
-      this.warningBox(`Failed to authenticate. Wrong Password?`);
+      this.warningBox(`Failed to authenticate. Wrong Password?`, 2000);
       console.log(e);
     }
   };

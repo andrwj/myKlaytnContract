@@ -4,7 +4,7 @@ import * as R from 'ramda';
 
 import Accessor from './Accessor';
 import RunCommand from './RunCommand';
-import { Either } from '../../FP/FP';
+import { sleep, revoke } from '../../FP/FP';
 
 import styles from './Contract.module.scss';
 
@@ -22,7 +22,8 @@ class ReadWriteContract extends Accessor {
 
   handleMethodSelectBoxChange = selected => {
     this.setState({ selected });
-    console.log('selected', selected);
+    // when selected command to run, call child method to update return value.
+    sleep(0).then(() => this.$('handleCommandReturnValue')()).catch(revoke);
   };
 
   selectedMethod = () => this.state.selected;
@@ -50,7 +51,6 @@ class ReadWriteContract extends Accessor {
         <RunCommand
           inputs={R.view(lensInputs, selected)||[]}
           returnType={R.view(lensReturnType, this.state.selected)}
-          returnValue=''
           command={this.state.selected}
         />
       </div>
