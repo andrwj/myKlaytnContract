@@ -1,7 +1,9 @@
 import React from 'react';
-import { TabPanel } from 'react-tabs';
 
 import Accessor from './Accessor';
+import ImportFunctionsButton from './ImportFunctionsButton';
+import ReadWriteContract from './ReadWriteContract';
+
 import styles from './Contract.module.scss';
 
 const defaultValues = {
@@ -17,40 +19,38 @@ class InteractWithContractTabPanel extends Accessor {
   }
 
   render() {
-    if(!this.state.visible) return '';
-
     return (
-      <TabPanel className={styles.tabPanel}>
+      <div>
         <h3 className={styles.h3}>Contact Address</h3>
         <form>
           <input
             className={styles.input}
             style={{ marginBottom: 30 }}
             type="text"
-          />
-        </form>
-        <h3 className={styles.h3}>Select Existing Contract</h3>
-        <form>
-          <input
-            className={styles.input}
-            style={{ marginBottom: 30 }}
-            type="text"
-            placeholder="Select a Contract"
+            value={this.props.contractAddress}
+            onChange={this.props.onContractAddressChange}
+            placeholder='0x1f30e4cAAAABBBBCCCCeeeefffFFFFBBBCCeefff'
           />
         </form>
         <h3 className={styles.h3}>ABI / JSON Interface</h3>
         <form>
-          <textarea className={styles.textarea} type="text" />
-          {/*{this.every('isAuthorized', 'gotDeployedContract') && (*/}
-          {/*  <input*/}
-          {/*    className={styles.submit}*/}
-          {/*    style={{ margin: 0 }}*/}
-          {/*    type="submit"*/}
-          {/*    value="Access"*/}
-          {/*  />*/}
-          {/*)}*/}
+          <textarea
+            className={this.props.validABIClassName}
+            onChange={this.props.onABIChanges}
+            value={this.props.ABI_string}
+            placeholder='[{ "type":"contructor", "inputs": [{ "name":"param1", "type":"uint256", "indexed":true }], "name":"Event" }, { "type":"function", "inputs": [{"name":"a", "type":"uint256"}], "name":"foo", "outputs": [] }] '
+          />
+          <ImportFunctionsButton
+            visible={this.props.hasValidABI && this.props.hasValidContractAddress && this.props.isAuthorized}
+            onClick={this.props.handleImportFunctions}
+          />
         </form>
-      </TabPanel>
+        <ReadWriteContract
+          visible={this.props.isFunctionsImported && this.props.isAuthorized}
+          contractAddress={this.props.contractAddress}
+          ABI={this.props.ABI}
+        />
+      </div>
     )
   }
 }

@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
 import * as R from 'ramda';
+import { Either, tryCatch } from '../../FP/FP';
 import * as utils from 'Utils/index';
 import * as Mason from 'Utils/mason';
 import Accessor, {handler} from './Accessor';
@@ -26,15 +27,21 @@ library.add(faThumbsUp);
 const { caver, baobabNetwork } = Mason;
 
 const defaultValues = {
-  showAccessTab: false,
+  showDeployContractTab: true,
   showSignButton: false,
   isAuthorized: false,
   hasBytecode: false,
   hasSigned: false,
+  hasValidABI: false,
+  hasValidContractAddress: false,
   isContractDeployed: false,
   gotDeployedContract: false,
-  validBytrecodeClassName: styles.textarea,
+  isFunctionsImported: false,
+  validDataClassName: styles.textarea,
+  validABIClassName: styles.textarea,
   bytecode: '',
+  abi_string: '',
+  ABI: '',
   gasLimit: 0,
   password: '',
   privateKey: '',
@@ -55,7 +62,7 @@ class Contract extends Accessor {
     caver(baobabNetwork());
   }
 
-  toggleAccessTab = () => this.toggle([false, true], 'showAccessTab');
+  toggleAccessTab = () => this.toggle([false, true], 'showDeployContractTab');
   resetAll = () => {
     //window.location.reload();
     this.setState(Object.assign({}, defaultValues, {isAuthorized: true}));
@@ -72,7 +79,7 @@ class Contract extends Accessor {
         .then(this.sethunk('bytecode', bytecode))
         .then(
           this.sethunk(
-            'validBytrecodeClassName',
+            'validDataClassName',
             `${styles.textarea} validate-ok`
           )
         )
@@ -81,7 +88,7 @@ class Contract extends Accessor {
             gasLimit: 0,
             hasBytecode: false,
             bytecode: '',
-            validBytrecodeClassName: styles.textarea
+            validDataClassName: styles.textarea
           });
         });
     } else {
@@ -90,7 +97,7 @@ class Contract extends Accessor {
         hasBytecode: false,
         bytecode: '',
         hasSigned: false,
-        validBytrecodeClassName: styles.textarea,
+        validDataClassName: styles.textarea,
       });
       this.warningBox(`Invalid Byte Codes.`);
     }
@@ -204,6 +211,59 @@ class Contract extends Accessor {
     return utils.sleep(5000).then(this.hideMessageBox);
   };
 
+  handleABIChanges = ({ target: { value } }) => {
+    // ABI 문자열을 Eval()을 통해 객체화 한다
+    // eslint-disable-next-line no-eval
+    tryCatch(eval, value)
+      .filter(v => Array.isArray(v))
+      .map(evaluated =>
+        evaluated.map(spec =>
+          spec.type === 'constructor' ?
+            Object.assign({}, spec, {value: 'constructor', label:'constructor'}) :
+            Object.assign({}, spec, {value: spec.name, label:spec.name})
+        ))
+      .fold(
+        () => {
+          this.setState({
+            ABI: null,
+            abi_string: value,
+            hasValidABI: false,
+            validABIClassName: `${styles.textarea}` });
+          this.infoBox(`Invalid ABI. Please use valid ABI definition`);
+        },
+        (evaluated) => {
+          this.setState({
+            ABI: evaluated,
+            abi_string: value,
+            hasValidABI: true,
+            validABIClassName: `${styles.textarea} validate-ok` })
+        });
+  };
+
+  handleImportFunctions = () => {
+    if(!(this.state.hasValidContractAddress && this.state.hasValidABI)) return false;
+
+    this.setState({isFunctionsImported: true});
+  };
+
+  handleContractAddress = ({ target: { value } }) => {
+      Either.of(address => /^0x[0-9a-fA-F]{40}$/.test(address), value)
+        .filter(address => String(address).length === 42)
+        .fold((address) => {
+            this.setState({
+              contractAddress: address,
+              hasValidContractAddress: false,
+            });
+            this.infoBox(`Invalid Contract Address.`);
+          },
+          (address) => {
+            this.setState({
+              contractAddress: address,
+              hasValidContractAddress: true,
+            });
+          });
+  };
+
   render() {
     return (
       <section className={styles.section}>
@@ -217,15 +277,9 @@ class Contract extends Accessor {
                 <Tab className={styles.tab} onClick={this.toggleAccessTab}>
                   Deploy Contract
                 </Tab>
-                {/* 활성화 될 시 Tag 이름을 div 대신 Tabss로 바꿀 것. */}
-                <div
-                  className={styles.tab}
-                  onClick={this.preparing}
-                  className={styles.preparing}
-                  //  onClick={this.toggleAccessTab}
-                >
-                  Interact with Contract
-                </div>
+                <Tab className={styles.tab}  onClick={this.toggleAccessTab}>
+                    Interact with Contract
+                </Tab>
               </TabList>
               <div className={styles.description}>
                 This site does not hold your keys for you. We cannot access
@@ -237,7 +291,7 @@ class Contract extends Accessor {
                 <h3 className={styles.h3}>Byte Code</h3>
                 <form>
                   <textarea
-                    className={this.get('validBytrecodeClassName')}
+                    className={this.get('validDataClassName')}
                     onChange={this.BytecodeChangeHandler}
                     type="text"
                     value={this.get('bytecode')}
@@ -266,7 +320,22 @@ class Contract extends Accessor {
                   onClick={handler(this, this.deployContract)}
                 />
               </TabPanel>
-              <InteractWithContractTabPanel visiable={false}/>
+              <TabPanel className={styles.tabPanel}>
+                <InteractWithContractTabPanel
+                  ABI={this.state.ABI}
+                  ABI_string={this.state.abi_string}
+                  visible={!this.state.showDeployContractTab}
+                  validABIClassName={this.state.validABIClassName}
+                  hasValidABI={this.state.hasValidABI}
+                  hasValidContractAddress={this.state.hasValidContractAddress}
+                  handleImportFunctions={this.handleImportFunctions}
+                  contractAddress={this.state.contractAddress}
+                  onABIChanges={this.handleABIChanges}
+                  onContractAddressChange={this.handleContractAddress}
+                  isFunctionsImported={this.state.isFunctionsImported}
+                  isAuthorized={this.state.isAuthorized}
+                />
+              </TabPanel>
             </Tabs>
           </div>
         </div>
@@ -297,3 +366,4 @@ class Contract extends Accessor {
 }
 
 export default Contract;
+
