@@ -4,7 +4,7 @@ import * as R from 'ramda';
 
 import Accessor from './Accessor';
 import RunCommand from './RunCommand';
-import { sleep, revoke } from '../../FP/FP';
+import { sleep, revoke } from '@andrwj/fp';
 
 import styles from './Contract.module.scss';
 

@@ -3,8 +3,7 @@ import * as R from 'ramda';
 
 import ReactRadioButtonGroup from './react-radio-button-group';
 import Accessor from './Accessor';
-import { Either, tryCatch, identity,revoke, truth } from '../../FP/FP';
-import * as Mason from '../../Utils/mason';
+import { Either, tryCatch, identity,revoke, truth } from '@andrwj/fp';
 
 import styles from './Contract.module.scss';
 
