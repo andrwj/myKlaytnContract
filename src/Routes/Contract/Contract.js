@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
 import * as R from 'ramda';
-import { Either, tryCatch } from '@andrwj/fp';
+import { Either, tryCatch } from '@andrwj/fp/FP';
 import * as utils from '../../Utils/index';
 import * as Mason from '../../Utils/mason';
 import Accessor, {handler} from './Accessor';
