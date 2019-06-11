@@ -40,6 +40,7 @@ class ReadWriteContract extends Accessor {
         />
         <RunCommand
           command={this.state.selected}
+          warningBox={this.props.warningBox}
         />
       </div>
     )

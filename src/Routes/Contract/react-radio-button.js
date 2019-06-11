@@ -1,6 +1,5 @@
 import React from 'react';
-import {getNonEmptyAttr} from './util';
-import {selectStringParam} from './util';
+import {getNonEmptyAttr, selectStringParam} from './react-radio-button-group-util';
 
 export const getUniqueId = (groupId, value) => groupId + '-' + value;
 

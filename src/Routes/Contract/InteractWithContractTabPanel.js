@@ -49,6 +49,7 @@ class InteractWithContractTabPanel extends Accessor {
           visible={this.props.isFunctionsImported && this.props.isAuthorized}
           contractAddress={this.props.contractAddress}
           ABI={this.props.ABI}
+          warningBox={this.props.warningBox}
         />
       </div>
     )

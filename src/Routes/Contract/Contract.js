@@ -10,8 +10,8 @@ import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
 import * as R from 'ramda';
 import { Either, tryCatch } from '../../FP/FP';
-import * as utils from 'Utils/index';
-import * as Mason from 'Utils/mason';
+import * as utils from '../../Utils/index';
+import * as Mason from '../../Utils/mason';
 import Accessor, {handler} from './Accessor';
 
 import styles from './Contract.module.scss';
@@ -202,13 +202,15 @@ class Contract extends Accessor {
 
   Klaytnscope = (type, addr) => `https://baobab.klaytnscope.com/${type}/${addr}`;
   hideMessageBox = () => this.setState({showMessageBox: false});
-  infoBox = (message) => {
+  infoBox = (message, msec=3000) => {
+    this.hideMessageBox();
     this.setState({showMessageBox: true, message, MessageBoxType: 'info'});
-    return utils.sleep(3000).then(this.hideMessageBox);
+    return utils.sleep(msec).then(this.hideMessageBox);
   };
-  warningBox = (message) => {
+  warningBox = (message, msec=3000) => {
+    this.hideMessageBox();
     this.setState({showMessageBox: true, message, MessageBoxType: 'warning'});
-    return utils.sleep(5000).then(this.hideMessageBox);
+    return utils.sleep(msec).then(this.hideMessageBox);
   };
 
   handleABIChanges = ({ target: { value } }) => {
@@ -334,6 +336,7 @@ class Contract extends Accessor {
                   onContractAddressChange={this.handleContractAddress}
                   isFunctionsImported={this.state.isFunctionsImported}
                   isAuthorized={this.state.isAuthorized}
+                  warningBox={this.warningBox}
                 />
               </TabPanel>
             </Tabs>

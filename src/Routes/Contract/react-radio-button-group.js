@@ -1,8 +1,10 @@
+// Original source from https://gitlab.com/dmaksimovic/react-radio-button-group
+// Modified only PropTypes related.
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactRadioButton from './react-radio-button';
-import {getNonEmptyAttr} from './util';
-import {selectStringParam} from './util';
+import {getNonEmptyAttr, selectStringParam} from './react-radio-button-group-util';
 
 const CLASS_NAME = 'className';
 
