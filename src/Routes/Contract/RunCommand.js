@@ -29,7 +29,7 @@ const buildArguments = (/*DOM collection object*/inputs) => {
         .fold(
           // ({name, value, dataset:{type}}) => acc.push({name, value, type}),
           ({name, value}) => { // Left: text
-            if(!value) throw new Error(`Empty value for parameter '${name}`);
+            if(!String(value).trim().length) throw new Error(`Empty value for parameter '${name}`);
             acc.push(value);
             },
           ({value, checked})=>{ // Right: radio
@@ -85,8 +85,20 @@ class RunCommand extends Accessor {
 
   execCommand (command) {
     if(!command) return;
+
+    // Temporary way to handle exception
+      const Try = (f) => {
+        try { return f(); }
+        catch(e) {
+          console.log(e.message);
+          this.$('warningBox')(`${e.message}`, 3000);
+          return undefined;
+        }
+      };
+
     const {name:method, constant:isReadFunction} = command;
-    const ARGS = buildArguments(document.getElementById(commandFormId).elements);
+    const ARGS = Try(() => buildArguments(document.getElementById(commandFormId).elements));
+    if(!ARGS) return;
     const caver = this.$('caver')();
     const ABI = this.$('ABI')();
     const address =  this.$('contractAddress')();
@@ -108,9 +120,9 @@ class RunCommand extends Accessor {
       })
       .catch(e => {
         this.$('hideMessageBox')();
-        console.log(e);
+        console.log(e.message);
         this.setState({returnValue: ''});
-        this.$('warningBox')(`We got an exception while calling method '${method}()'. Please refer output of console.log`, 3000);
+        this.$('warningBox')(`${e.message}`,  3000);
       });
   };
 
@@ -129,7 +141,7 @@ class RunCommand extends Accessor {
             t => Either.done(`Type '${t}' is not supported yet. Stop`),
             t => Either.right(t)
           ))
-      .tap(t => console.log(`Command Type:'${t}'`))
+      // .tap(t => console.log(`Command Type:'${t}'`))
       .take();
 
     const validator = Validators(type);
@@ -143,6 +155,8 @@ class RunCommand extends Accessor {
         .fold(
           ([,message]) => {
             this.$('warningBox')(message);
+            domEl.target.value = '';
+            this.forceUpdate();
             return false;
           },
           () => true,
