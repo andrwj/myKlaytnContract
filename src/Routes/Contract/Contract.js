@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
 import * as R from 'ramda';
-import { Either, tryCatch } from '@andrwj/fp/FP';
+import { Either } from '../../FP/FP';
 import * as utils from '../../Utils/index';
 import * as Mason from '../../Utils/mason';
 import Accessor, {handler} from './Accessor';
@@ -45,6 +45,7 @@ const defaultValues = {
   gasLimit: 0,
   password: '',
   privateKey: '',
+  keystore: '',
   rawTransaction: '',
   signedTransaction: '',
   caver: null, // in case ...
@@ -137,8 +138,8 @@ class Contract extends Accessor {
   authByKeystore = () => {
     try {
       const verified = /*caver object */ Mason.authenticate(
-        this.get('keystore'),
-        this.get('password')
+        this.state.keystore,
+        this.state.password
       );
       this.setState({ caver: verified, isAuthorized: !!verified });
       this.infoBox(`Account on BaobabNetwork: ${Mason.whoami()}`, 2000);
@@ -149,13 +150,12 @@ class Contract extends Accessor {
   };
 
   // 개인 인증을 PrivateKey로 선택했을 때
-  handlePrivateKeyChange = ({ target: { value } }) =>
-    this.set('privateKey', value);
+  handlePrivateKeyChange = ({ target: { value } }) => this.setState({privateKey: value});
 
   // 개인 인증을 로컬에 저장된 keystore(JSON) 파일로 선택했을 때
   authByPrivateKey = () => {
     try {
-      const verified = Mason.privateKeyToAccount(this.get('privateKey'));
+      const verified = Mason.privateKeyToAccount(this.state.privateKey);
       this.setState({ caver: verified, isAuthorized: !!verified });
       this.infoBox(`Account on BaobabNetwork: ${Mason.whoami()}`, 1000);
     } catch (e) {
@@ -165,10 +165,10 @@ class Contract extends Accessor {
   };
 
   signTransaction = () => {
-    if (!this.get('isAuthorized')) return;
+    if (!this.state.isAuthorized) return;
     const changes = {
-      data: this.get('bytecode'),
-      gas: this.get('gasLimit'),
+      data: this.state.bytecode,
+      gas: this.state.gasLimit,
       from: caver().klay.defaultAccount,
       value: '0x00'
     };
@@ -189,7 +189,7 @@ class Contract extends Accessor {
 
   deployContract = () => {
     this.infoBox('Deploying signed contract ...');
-    Mason.sendSignedTransaction(this.get('signedTransaction'))
+    Mason.sendSignedTransaction(this.state.signedTransaction)
       .then(R.tap(tx => console.log(JSON.stringify(tx))))
       .then(({ contractAddress, transactionHash }) => {
         this.hideMessageBox();
@@ -219,30 +219,29 @@ class Contract extends Accessor {
   handleABIChanges = ({ target: { value } }) => {
     // ABI 문자열을 Eval()을 통해 객체화 한다
     // eslint-disable-next-line no-eval
-    tryCatch(eval, value)
+    Either.try(() => eval(value))
       .filter(v => Array.isArray(v))
-      .map(evaluated =>
-        evaluated.map(spec =>
-          spec.type === 'constructor' ?
-            Object.assign({}, spec, {value: 'constructor', label:'constructor'}) :
-            Object.assign({}, spec, {value: spec.name, label:spec.name})
-        ))
-      .fold(
-        () => {
-          this.setState({
-            ABI: null,
-            abi_string: value,
-            hasValidABI: false,
-            validABIClassName: `${styles.textarea}` });
-          this.infoBox(`Invalid ABI. Please use valid ABI definition`);
-        },
-        (evaluated) => {
-          this.setState({
+      .map(evaluated => /* [{함수이름}, {함수이름},...] 형식인데, constructor 에 해당하는 함수에만 이름이 없어서 만들어줘야 함 */
+           evaluated.map(spec =>
+                         spec.type === 'constructor' ?
+                                      Object.assign({}, spec, {value: 'constructor', label:'constructor'}) :
+                                      Object.assign({}, spec, {value: spec.name, label:spec.name})))
+      .map( evaluated => {
+          return this.setState({
             ABI: evaluated,
             abi_string: value,
             hasValidABI: true,
-            validABIClassName: `${styles.textarea} validate-ok` })
-        });
+            validABIClassName: `${styles.textarea} validate-ok`
+          });
+        })
+      .catch(() =>{
+        this.$('infoBox')(`Invalid ABI. Please use valid ABI definition`);
+        return this.setState({
+          ABI: null,
+          abi_string: value,
+          hasValidABI: false,
+          validABIClassName: `${styles.textarea}` });
+      });
   };
 
   handleImportFunctions = () => {
@@ -298,7 +297,7 @@ class Contract extends Accessor {
                     className={this.get('validDataClassName')}
                     onChange={this.BytecodeChangeHandler}
                     type="text"
-                    value={this.get('bytecode')}
+                    value={this.state.bytecode}
                   />
                 </form>
                 <h3 className={styles.h3}>Gas Limit</h3>
@@ -318,9 +317,9 @@ class Contract extends Accessor {
                 </form>
                 <TransactionBox
                   visible={this.every('isAuthorized', 'hasBytecode', 'hasSigned')}
-                  rawTransaction={this.get('rawTransaction')}
-                  signedTransaction={this.get('signedTransaction')}
-                  disabled={this.get('isContractDeployed')}
+                  rawTransaction={this.state.rawTransaction}
+                  signedTransaction={this.state.signedTransaction}
+                  disabled={this.state.isContractDeployed}
                   onClick={handler(this, this.deployContract)}
                 />
               </TabPanel>
@@ -371,4 +370,3 @@ class Contract extends Accessor {
 }
 
 export default Contract;
-

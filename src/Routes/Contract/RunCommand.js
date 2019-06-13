@@ -3,7 +3,7 @@ import * as R from 'ramda';
 
 import ReactRadioButtonGroup from './react-radio-button-group';
 import Accessor from './Accessor';
-import { Either, tryCatch, identity,revoke } from '@andrwj/fp/FP';
+import { Either, identity, revoke, truth } from '../../FP/FP';
 
 import styles from './Contract.module.scss';
 
@@ -20,19 +20,19 @@ const lensTransactionHash = R.lensProp('transactionHash');
 
 const buildArguments = (/*DOM collection object*/inputs) => {
   return [...inputs]
-    .filter(({name}) => ['submit', 'result'].some(n => name !== n))
-    .filter(({type}) => ['text', 'radio'].some(t => type === t))
-    .filter(({disabled}) => !disabled) //disabled 필드 제외
+    .filter(({name}) => ['submit', 'result'].some(n => name !== n)) // 두개의 이름 제외
+    .filter(({disabled}) => !disabled) // disabled 된 항목도 제외
+    .filter(({type}) => ['text', 'radio'].some(t => type === t)) // text 또는 라디오버튼 항목만 처리
     .reduce((acc, el) => {
       Either
         .of(({type}) => type==='radio', el)
         .fold(
           // ({name, value, dataset:{type}}) => acc.push({name, value, type}),
-          ({name, value}) => {
+          ({name, value}) => { // Left: text
             if(!value) throw new Error(`Empty value for parameter '${name}`);
             acc.push(value);
             },
-          ({value, checked})=>{
+          ({value, checked})=>{ // Right: radio
             // if(checked) acc.push({name, 'value': (value.toLowerCase()==='true'), type: 'bool'})
             if(checked) acc.push(value.toLowerCase()==='true');
           }
@@ -69,6 +69,8 @@ const Validators = R.curry((type, value) => {
         .fold(()=>[false, 'Please use valid address for Klaytn Network.'],
           () => [true, 'ok']);
     },
+    'bool': () =>  [true, 'ok'],
+    'unsupported': (t) => [false, `Type '${t}' is not supported yet. Stop`],
   }[type](value);
 });
 
@@ -93,7 +95,8 @@ class RunCommand extends Accessor {
     const KC = new caver.klay.Contract(ABI, address, opts);
     const interfaceCall = isReadFunction ? 'call' : 'send';
 
-    this.$('infoBox')(`calling ${method}() ...`, 5000);
+    // 'call()' 함수의 처리결과가 너무 빨리 넘어오기 때문에 메세지 박스가 껌뻑이는 것 처럼 보여서 좋지않다.
+    if(!isReadFunction) this.$('infoBox')(`calling ${method}() ...`, 5000);
 
     Promise.resolve(opts)
       .then(KC.methods[method](...ARGS)[interfaceCall])
@@ -117,20 +120,17 @@ class RunCommand extends Accessor {
   };
 
   validate (t) {
-    const type = Either
-      .of(t=> t.indexOf('uint') === -1, t) //uint8, uint32, uint128, ...
+    // supported type: 'number', 'address', 'string', 'bool'
+    const type = Either.of(() => t.indexOf('uint') === -1, t) // uint8, uint32, uint128, ...=> 'number'
       .fold(
-        () => Either.right('number'),
-        (t) => Either.of(t => ['string', 'bool', 'address'].find(supported => t.indexOf(supported)), t)
+        () => Either.done(Either.right('number')),
+        (t) => Either.of(t => ['string', 'address', 'bool'].find(supported => t.indexOf(supported)), t)
           .fold(
-            (t) => {
-              const message =`getValidator(${t}), and is not supported yet. Stop`;
-              console.log(message);
-              throw new Error(message);
-              },
-            (t) => Either.right(t)
-          )
-      ).fold(identity, identity);
+            t => Either.done(`Type '${t}' is not supported yet. Stop`),
+            t => Either.right(t)
+          ))
+      .tap(t => console.log(`Command Type:'${t}'`))
+      .take();
 
     const validator = Validators(type);
 
@@ -156,19 +156,9 @@ class RunCommand extends Accessor {
   };
 
   handleCommandReturnValue = () => {
-    // when selected command, constant=true, has no argument, execute it for displaying return value.
+    // TODO: <Select> 컴포넌트에서 실행할 함수를 선택하면 이전 결과값을 없애는 역활을 함.
     this.setState({returnValue: ''});
-    // const {command} = this.state;
-    // Either.of(v=>v && !v.length, this.getFormInputElements(commandFormId))
-    //   .chain(() => tryCatch(({constant})=> constant, command))
-    //   .chain(tryCatch(this.execCommand, command));
   };
-
-  // get DOM elements of 'input' tag in <form id={commandFormId}>
-  getFormInputElements = (id=commandFormId) =>
-    tryCatch(id => document.getElementById(id).elements, id)
-      .fold(revoke, identity);
-
 
   render() {
     return (

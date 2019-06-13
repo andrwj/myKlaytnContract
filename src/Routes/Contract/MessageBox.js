@@ -1,6 +1,4 @@
 import React from 'react';
-import Accessor from './Accessor';
-
 import styles from './Contract.module.scss';
 
 const assets = {
@@ -14,24 +12,9 @@ const assets = {
   }
 };
 
-const defaultValues = {
-  message: '',
-  visible: false,
-  type: "warning",
-};
-
-
-class MessageBox extends Accessor {
-
-  constructor(props) {
-    super(props);
-    this.state = Object.assign({}, defaultValues);
-    this.onClick = this.props.onClick;
-  }
-
-  render() {
-    if(!this.state.visible) return '';
-    const a = assets[this.props.type];
+export default function MessageBox(props) {
+    if(!props.visible) return '';
+    const a = assets[props.type];
     return (
       <div className={a.boxClassName}>
         <div className={styles.boxDescWrap}>
@@ -39,15 +22,13 @@ class MessageBox extends Accessor {
             <i className={a.iconClassName} />
           </div>
           <div className={styles.boxDesc}>
-            {this.state.message}
+            {props.message}
           </div>
-          <div className={styles.fontAweSomeWrap} onClick={this.onClick}>
+          <div className={styles.fontAweSomeWrap} onClick={props.onClick}>
             <i className="fal fa-times-circle" />
           </div>
         </div>
       </div>
     )
-  }
 }
 
-export default MessageBox;

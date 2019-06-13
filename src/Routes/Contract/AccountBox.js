@@ -4,24 +4,8 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import Accessor from './Accessor';
 import styles from './Contract.module.scss';
 
-const defaultValues = {
-  visible: true,
-};
-
-class AccountBox extends Accessor {
-
-  constructor(props) {
-    super(props);
-    this.state = Object.assign({}, defaultValues);
-    this.handlePrivateKeyChange = this.props.handlePrivateKeyChange;
-    this.authByPrivateKey = this.props.authByPrivateKey;
-    this.handleFileChange = this.props.handleFileChange;
-    this.handlePasswordChange = this.props.handlePasswordChange;
-    this.authByKeystore = this.props.authByKeystore;
-  }
-
-  render() {
-    if(!this.state.visible) return '';
+export default function AccountBox(props) {
+    if(!props.visible) return '';
     return (
       <div
         className={styles.containerWrap}
@@ -55,13 +39,13 @@ class AccountBox extends Accessor {
                 <input
                   className={styles.input}
                   style={{ marginBottom: 30 }}
-                  onChange={this.handlePrivateKeyChange}
+                  onChange={props.handlePrivateKeyChange}
                 />
                 <input
                   className={styles.submit}
                   type="submit"
                   value="Access"
-                  onClick={this.authByPrivateKey}
+                  onClick={props.authByPrivateKey}
                 />
               </TabPanel>
               <TabPanel>
@@ -70,27 +54,24 @@ class AccountBox extends Accessor {
                   type="file"
                   className={styles.file}
                   style={{ marginBottom: 30 }}
-                  onChange={this.handleFileChange}
+                  onChange={props.handleFileChange}
                 />
                 <h3 className={styles.h3}>Password</h3>
                 <input
                   type="password"
                   className={styles.input}
-                  onBlur={this.handlePasswordChange}
+                  onBlur={props.handlePasswordChange}
                 />
                 <input
                   className={styles.submit}
                   type="submit"
                   value="Access"
-                  onClick={this.authByKeystore}
+                  onClick={props.authByKeystore}
                 />
               </TabPanel>
             </div>
           </Tabs>
         </div>
       </div>
-    )
-  }
+    );
 }
-
-export default AccountBox;
