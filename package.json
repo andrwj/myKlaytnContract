@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@andrwj/fp": "^0.0.11",
+    "@andrwj/fp": "^0.0.16",
     "@babel/core": "7.4.3",
     "@fortawesome/fontawesome-svg-core": "^1.2.18",
     "@fortawesome/free-solid-svg-icons": "^5.8.2",
