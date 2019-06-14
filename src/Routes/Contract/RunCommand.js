@@ -3,7 +3,7 @@ import * as R from 'ramda';
 
 import ReactRadioButtonGroup from './react-radio-button-group';
 import Accessor from './Accessor';
-import { Either, identity, revoke, truth } from '@andrwj/fp/FP';
+import { Either, identity } from '@andrwj/fp/FP';
 
 import styles from './Contract.module.scss';
 
@@ -27,15 +27,15 @@ const buildArguments = (/*DOM collection object*/inputs) => {
       Either
         .of(({type}) => type==='radio', el)
         .fold(
+          ({value, checked})=>{ // Right: radio
+            // if(checked) acc.push({name, 'value': (value.toLowerCase()==='true'), type: 'bool'})
+            if(checked) acc.push(value.toLowerCase()==='true');
+          },
           // ({name, value, dataset:{type}}) => acc.push({name, value, type}),
           ({name, value}) => { // Left: text
             if(!String(value).trim().length) throw new Error(`Empty value for parameter '${name}`);
             acc.push(value);
-            },
-          ({value, checked})=>{ // Right: radio
-            // if(checked) acc.push({name, 'value': (value.toLowerCase()==='true'), type: 'bool'})
-            if(checked) acc.push(value.toLowerCase()==='true');
-          }
+            }
         );
       return acc;},[]);
 };
@@ -47,8 +47,10 @@ const Validators = R.curry((type, value) => {
         .fromNullable(v)
         .map(v => String(v).trim())
         .filter(v => v.length)
-        .fold(()=>[false, 'Please use at least one character.'],
-          () => [true, 'ok']);
+        .fold(
+          () => [true, 'ok'],
+          ()=>[false, 'Please use at least one character.']
+        );
     } ,
     'number': (v) => {
       return Either
@@ -57,17 +59,21 @@ const Validators = R.curry((type, value) => {
         .filter(v => v.length)
         .filter(v => !/\D/.test(v))
         .filter(v => v.length < 65)
-        .fold(()=>[false, 'Please use only number characters (0-9).'],
-          () => [true, 'ok']);
+        .fold(
+          () => [true, 'ok'],
+          ()=>[false, 'Please use only number characters (0-9).']
+        );
     },
     'address': (v) => {
       return Either
         .fromNullable(v)
-        .map(v => (v).trim())
+        .map(v => String(v).trim())
         .filter(v => v.length)
         .filter(address => /^0x[0-9a-fA-F]{40}$/.test(address))
-        .fold(()=>[false, 'Please use valid address for Klaytn Network.'],
-          () => [true, 'ok']);
+        .fold(
+          () => [true, 'ok'],
+          ()=>[false, 'Please use valid address for Klaytn Network.']
+        );
     },
     'bool': () =>  [true, 'ok'],
     'unsupported': (t) => [false, `Type '${t}' is not supported yet. Stop`],
@@ -85,19 +91,16 @@ class RunCommand extends Accessor {
 
   execCommand (command) {
     if(!command) return;
-
-    // Temporary way to handle exception
-      const Try = (f) => {
-        try { return f(); }
-        catch(e) {
-          console.log(e.message);
-          this.$('warningBox')(`${e.message}`, 3000);
-          return undefined;
-        }
-      };
-
     const {name:method, constant:isReadFunction} = command;
-    const ARGS = Try(() => buildArguments(document.getElementById(commandFormId).elements));
+    const ARGS = Either.try(
+        () => buildArguments(document.getElementById(commandFormId).elements)
+      ).fold( identity,
+        e => {
+        console.log(e.message);
+        this.$('warningBox')(`${e.message}`, 3000);
+        return null;
+      });
+
     if(!ARGS) return;
     const caver = this.$('caver')();
     const ABI = this.$('ABI')();
@@ -133,33 +136,31 @@ class RunCommand extends Accessor {
 
   validate (t) {
     // supported type: 'number', 'address', 'string', 'bool'
-    const type = Either.of(() => t.indexOf('uint') === -1, t) // uint8, uint32, uint128, ...=> 'number'
-      .fold(
-        () => Either.done(Either.right('number')),
-        (t) => Either.of(t => ['string', 'address', 'bool'].find(supported => t.indexOf(supported)), t)
-          .fold(
-            t => Either.done(`Type '${t}' is not supported yet. Stop`),
-            t => Either.right(t)
-          ))
-      // .tap(t => console.log(`Command Type:'${t}'`))
+    // 'uint8, uint16, .. uint128 => 'number'
+    // otherwise, 'unsupported'
+    const isSupportable  = value => ['string', 'address', 'bool'].find(type => value.indexOf(type) !== -1);
+    const type = Either.doneIf(  isSupportable, t)
+      .throwIf(x => x.indexOf('uint') !==-1, 'number')
+      .done('unsupported')
+      .catch()
       .take();
 
     const validator = Validators(type);
+    const validationOf = Either.of(([ok]) => !!ok);
 
     return (domEl) => {
       const {target: {value, name}} = domEl;
-      // console.log(`got ${value} from ${name}`);
+      // console.log(`got ${value} from ${name}`, validator(value));
 
-      return Either
-        .of(([ok, ]) => ok, validator(value))
+      return validationOf(validator(value))
         .fold(
+          () => true,
           ([,message]) => {
             this.$('warningBox')(message);
             domEl.target.value = '';
             this.forceUpdate();
             return false;
-          },
-          () => true,
+          }
         );
     };
   };
@@ -184,7 +185,6 @@ class RunCommand extends Accessor {
               {
                  Either.of(t => t === 'bool', input.type)
                   .fold(
-                    () => <input style={inputStyle} name={input.name} type='text' data-type={input.type} onChange={this.validate(input.type)}/>,
                     () => (
                       <ReactRadioButtonGroup name={input.name}
                                              options={['False', 'True']}
@@ -196,7 +196,8 @@ class RunCommand extends Accessor {
                                              labelClassName={styles.radioBG_Label}
                                              inputClassName={styles.radioBG_Input} >
                       </ReactRadioButtonGroup>
-                    )
+                    ),
+                    () => <input style={inputStyle} name={input.name} type='text' data-type={input.type} onChange={this.validate(input.type)}/>
                   )
               }
             </div>

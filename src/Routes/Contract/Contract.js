@@ -252,18 +252,18 @@ class Contract extends Accessor {
 
   handleContractAddress = ({ target: { value } }) => {
       Either.of(address => /^0x[0-9a-fA-F]{40}$/.test(address), value)
-        .fold((address) => {
+        .fold( (address) => {
+            this.setState({
+              contractAddress: address,
+              hasValidContractAddress: true,
+            });
+          },
+          (address) => {
             this.setState({
               contractAddress: address,
               hasValidContractAddress: false,
             });
             this.infoBox(`Invalid Contract Address.`);
-          },
-          (address) => {
-            this.setState({
-              contractAddress: address,
-              hasValidContractAddress: true,
-            });
           });
   };
 
