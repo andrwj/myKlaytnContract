@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
 import * as R from 'ramda';
-import { Either } from '@andrwj/fp/FP';
+import { Either } from '@andrwj/fp';
 import * as utils from '../../Utils/index';
 import * as Mason from '../../Utils/mason';
 import Accessor, {handler} from './Accessor';
@@ -251,7 +251,7 @@ class Contract extends Accessor {
   };
 
   handleContractAddress = ({ target: { value } }) => {
-      Either.of(address => /^0x[0-9a-fA-F]{40}$/.test(address), value)
+    Either.of(value, address => /^0x[0-9a-fA-F]{40}$/.test(address))
         .fold( (address) => {
             this.setState({
               contractAddress: address,

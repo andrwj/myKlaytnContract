@@ -3,7 +3,7 @@ import * as R from 'ramda';
 
 import ReactRadioButtonGroup from './react-radio-button-group';
 import Accessor from './Accessor';
-import { Either, identity } from '@andrwj/fp/FP';
+import { Either, identity } from '@andrwj/fp';
 
 import styles from './Contract.module.scss';
 
@@ -25,7 +25,7 @@ const buildArguments = (/*DOM collection object*/inputs) => {
     .filter(({type}) => ['text', 'radio'].some(t => type === t)) // text 또는 라디오버튼 항목만 처리
     .reduce((acc, el) => {
       Either
-        .of(({type}) => type==='radio', el)
+        .of(el, ({type}) => type==='radio')
         .fold(
           ({value, checked})=>{ // Right: radio
             // if(checked) acc.push({name, 'value': (value.toLowerCase()==='true'), type: 'bool'})
@@ -94,8 +94,9 @@ class RunCommand extends Accessor {
     const {name:method, constant:isReadFunction} = command;
     const ARGS = Either.try(
         () => buildArguments(document.getElementById(commandFormId).elements)
-      ).fold( identity,
-        e => {
+    ).fold(
+      identity,
+      e => {
         console.log(e.message);
         this.$('warningBox')(`${e.message}`, 3000);
         return null;
@@ -146,7 +147,7 @@ class RunCommand extends Accessor {
       .take();
 
     const validator = Validators(type);
-    const validationOf = Either.of(([ok]) => !!ok);
+    const validationOf = (value) => Either.of(value, ([ok]) => ok);
 
     return (domEl) => {
       const {target: {value, name}} = domEl;
@@ -183,7 +184,7 @@ class RunCommand extends Accessor {
             <div key={String(idx)}>
               <span style={inputNameStyle}>{input.name}</span>&nbsp;&nbsp;<span style={inputTypeStyle}>{input.type}</span>
               {
-                 Either.of(t => t === 'bool', input.type)
+                Either.of(input.type, t => t === 'bool')
                   .fold(
                     () => (
                       <ReactRadioButtonGroup name={input.name}
