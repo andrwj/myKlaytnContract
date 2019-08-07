@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@andrwj/fp@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@andrwj/fp/-/fp-0.3.1.tgz#a1398c289b3aba4cc89eefc75907cb5888578f6e"
-  integrity sha512-F/OGdWU+pL4wcmnP5C8K4WHQxpxSOwZnjL5vjIuAMwu7O4xx4Q0ru97R3dwtMRpwhzZ2zFLR5sZSTXm/Zez9wA==
+"@andrwj/fp@^0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@andrwj/fp/-/fp-0.3.2.tgz#2467677063f242d5110fad9905a922365f2e3355"
+  integrity sha512-B47pYoZixhIiQ29ZSExvZtymYJXN+y2oIe3pnZhiTJ4pKPXD3yh7mxBHej0+oM4WVHmaCwakZiD5Dmubaqa2RA==
   dependencies:
     "@babel/plugin-transform-runtime" "^7.5.5"
     "@babel/preset-env" "^7.5.5"
