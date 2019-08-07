@@ -1,13 +1,10 @@
 {
-  "name": "insureum",
+  "name": "myklaytn-contract",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@andrwj/fp": "^0.3.2",
     "@babel/core": "7.4.3",
-    "@fortawesome/fontawesome-svg-core": "^1.2.18",
-    "@fortawesome/free-solid-svg-icons": "^5.8.2",
-    "@fortawesome/react-fontawesome": "^0.1.4",
     "@svgr/webpack": "4.1.0",
     "@typescript-eslint/eslint-plugin": "1.6.0",
     "@typescript-eslint/parser": "1.6.0",
@@ -98,7 +95,6 @@
     ]
   },
   "devDependencies": {
-    "@fortawesome/fontawesome-pro": "^5.8.2"
   },
   "jest": {
     "collectCoverageFrom": [

@@ -1,17 +1,10 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
-import Router from 'Components/Router';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import styled from 'styled-components';
-
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStroopwafel, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
 import * as R from 'ramda';
 import { Either } from '@andrwj/fp';
-import * as utils from '../../Utils/index';
-import * as Mason from '../../Utils/mason';
+import * as utils from '../Utils/index';
+import * as Mason from '../Utils/mason';
 import Accessor, {handler} from './Accessor';
 
 import styles from './Contract.module.scss';
@@ -21,8 +14,6 @@ import TransactionBox from './TransactionBox';
 import AccountBox from './AccountBox';
 import TxResultBox from "./TxResultBox";
 import MessageBox from "./MessageBox";
-
-library.add(faThumbsUp);
 
 const { caver, baobabNetwork } = Mason;
 

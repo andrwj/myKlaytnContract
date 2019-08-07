@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import App from './Components/App'
+import ReactDOM from 'react-dom';
+import Contract from './Contract/Contract';
 
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(<Contract />, document.getElementById('myklaytn-contract'))
