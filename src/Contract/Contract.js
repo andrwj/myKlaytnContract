@@ -263,10 +263,10 @@ class Contract extends Accessor {
       <section className={styles.section}>
         <div className={styles.containerWrap}>
           <div className={styles.container}>
-            <h2 className={styles.h2}>
+            <h2 className={styles.h2top}>
               Interact with Contract or Deploy Contract
             </h2>
-            <Tabs className={styles.tabs}>
+            <Tabs className={styles.tabs} defaultIndex="1">
               <TabList className={styles.tabList}>
                 <Tab className={styles.tab} onClick={this.toggleAccessTab}>
                   Deploy Contract
@@ -276,10 +276,9 @@ class Contract extends Accessor {
                 </Tab>
               </TabList>
               <div className={styles.description}>
-                This site does not hold your keys for you. We cannot access
-                accounts, recover keys, reset passwords, nor reverse
-                transactions. Protect your keys & always check that you are on
-                correct URL. You are responsible for your security.
+                이 게시물에서 포함된 어플리케이션은 학습을 목적으로 제작된 것이며 
+                사용자의 개인 키, 비밀번호, 주소 등을 허락없이 서버로 전송하거나 저장하지 않습니다. 
+                항상 개인 키는 주의해서 보관하세요. 사용자의 보안은 사용자가 책임지는 것입니다.
               </div>
               <TabPanel className={styles.tabPanel}>
                 <h3 className={styles.h3}>Byte Code</h3>

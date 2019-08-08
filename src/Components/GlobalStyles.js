@@ -1,32 +1,26 @@
 import { createGlobalStyle } from 'styled-components'
-import reset from 'styled-reset'
 
 const globalStyles = createGlobalStyle`
-    ${reset};
-    a{
-        text-decoration: none;
-        color: inherit;
-        font-weight: bold;
-        color: #545454;
+    #myklaytn-contract {
+        padding: 20px;
     }
-    li {
-        display:inline-block;
-    }
-    *{
-        box-sizing:border-box;
-    }
-    body{
-        font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        font-size:12px;
-        background-color: #f8f9fa;
-        color:black;
-        font-family: monospace;
-    }
-
     .validate-ok {
       border: 1px solid green;
       border-radius: 10px;
     }
+
+    ul[role="tablist"] {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    li[role="tab"] {
+      border-bottom: 1px solid #ccc;
+      list-style-type: none !important;
+    }
+    li[role="tab"].react-tabs__tab--selected {
+      border-bottom: 0;
+    }
+
     .react-tabs__tab--selected {
         color: #031f42 !important;
         border: 1px solid #ccc;

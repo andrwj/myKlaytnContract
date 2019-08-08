@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React from 'react';
 import * as R from 'ramda';
 
 const prototypes = (() => {
@@ -19,7 +19,7 @@ const prototypes = (() => {
   };
 })();
 
-class Accessor extends Component {
+class Accessor extends React.Component {
   constructor(...props) {
     super(...props);
     this.__register_methods__()

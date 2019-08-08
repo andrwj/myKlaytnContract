@@ -1,15 +1,13 @@
 import React from 'react';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
-import Accessor from './Accessor';
 import styles from './Contract.module.scss';
 
 export default function AccountBox(props) {
     if(!props.visible) return '';
     return (
       <div
-        className={styles.containerWrap}
-        style={{ paddingTop: 30, paddingBottom: 60 }}>
+        className={styles.containerWrap} style={{ paddingTop: 50}}>
         <div className={styles.containerBottom}>
           <h2 className={styles.h2}>Access Existing Account</h2>
           <Tabs
@@ -20,21 +18,19 @@ export default function AccountBox(props) {
             }}>
             <TabList className={styles.accountTabs}>
               <Tab className={styles.accountTab}>
-                Sign-in Using Private Key
+                개인 키로 계정에 연결
               </Tab>
               <Tab className={styles.accountTab}>
-                Sign-in Using Keystore File
+                Keystore 파일로 계정에 연결
               </Tab>
             </TabList>
             <div style={{ flex: 1.3, padding: '0 30px' }}>
               <div className={styles.description} style={{ paddingTop: 0 }}>
-                You can access your account using your private key or Klaytn
-                HRA Private Key (for custom address accounts). Or you can
-                also use your keystore file and its password.
+              개인 키 또는 keystore 파일을 사용하여 계정에 액세스할 수 있습니다.
               </div>
               <TabPanel>
                 <h3 className={styles.h3}>
-                  Private Key or HRA Private Key
+                  Private Key 
                 </h3>
                 <input
                   className={styles.input}
@@ -44,19 +40,19 @@ export default function AccountBox(props) {
                 <input
                   className={styles.submit}
                   type="submit"
-                  value="Access"
+                  value="로그인"
                   onClick={props.authByPrivateKey}
                 />
               </TabPanel>
               <TabPanel>
-                <h3 className={styles.h3}>Import Keystore File (.json)</h3>
+                <h3 className={styles.h3}>Keystore 파일읽기 (.json)</h3>
                 <input
                   type="file"
                   className={styles.file}
                   style={{ marginBottom: 30 }}
                   onChange={props.handleFileChange}
                 />
-                <h3 className={styles.h3}>Password</h3>
+                <h3 className={styles.h3}>Keystore 파일 비밀번호</h3>
                 <input
                   type="password"
                   className={styles.input}
@@ -65,7 +61,7 @@ export default function AccountBox(props) {
                 <input
                   className={styles.submit}
                   type="submit"
-                  value="Access"
+                  value="로그인"
                   onClick={props.authByKeystore}
                 />
               </TabPanel>

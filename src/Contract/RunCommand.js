@@ -150,7 +150,7 @@ class RunCommand extends Accessor {
     const validationOf = (value) => Either.of(value, ([ok]) => ok);
 
     return (domEl) => {
-      const {target: {value, name}} = domEl;
+      const {target: {value, /* name */ }} = domEl;
       // console.log(`got ${value} from ${name}`, validator(value));
 
       return validationOf(validator(value))

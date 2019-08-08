@@ -1,5 +1,3 @@
-import * as R from 'ramda';
-
 export const applyChanges = (self) => (...args) => self.setState(
           Object
             .entries(args)
